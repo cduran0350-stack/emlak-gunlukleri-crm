@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Emlak Günlükleri CRM</title>
     <meta name="description" content="Modern, hızlı ve görsel odaklı emlak yönetim sistemi.">
-    <link rel="icon" type="image/png" href="C:\Users\Ayşe Nur\.gemini\antigravity\brain\43a0619f-a66c-445b-99c0-c4cfa9b1aedb\media__1775298588218.png">
+    <link rel="icon" type="image/png" href="logo.png">
     <link rel="stylesheet" href="styles.css">
     <!-- Google Fonts: Inter & Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,7 +19,7 @@
     <div id="login-overlay" class="login-overlay">
         <div class="login-card">
             <div class="logo-container" style="margin-bottom: 2rem; text-align: center;">
-                <img src="C:\Users\Ayşe Nur\.gemini\antigravity\brain\43a0619f-a66c-445b-99c0-c4cfa9b1aedb\media__1775298588218.png" 
+                <img src="logo.png" 
                      alt="Emlak Günlükleri Logo" 
                      style="max-width: 200px; height: auto;">
             </div>
@@ -51,7 +51,7 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-header" style="text-align: center; margin-bottom: 2.5rem; position: relative;">
-                <img src="C:\Users\Ayşe Nur\.gemini\antigravity\brain\43a0619f-a66c-445b-99c0-c4cfa9b1aedb\media__1775298588218.png" 
+                <img src="logo.png" 
                      alt="Emlak Günlükleri Logo" 
                      style="max-width: 70px; height: auto;">
                 <div class="lang-switcher" style="display: flex; gap: 0.8rem; justify-content: center; margin-top: 1rem;">
@@ -84,7 +84,7 @@
             </nav>
             <div class="sidebar-footer">
                 <div class="user-profile">
-                    <img src="C:\Users\Ayşe Nur\.gemini\antigravity\brain\43a0619f-a66c-445b-99c0-c4cfa9b1aedb\media__1775298588218.png" 
+                    <img src="logo.png" 
                          alt="User Profile Logo" 
                          style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">
                     <div class="user-info">
@@ -130,13 +130,13 @@
 
     <!-- Modals -->
     <div class="modal-overlay" id="modal-overlay">
-        <div class="modal-content">
-            <header class="modal-header">
+        <div class="modal-content" style="display:flex; flex-direction:column; max-height:90vh;">
+            <header class="modal-header" style="flex-shrink:0;">
                 <h2 id="modal-title-h2">...</h2>
                 <button id="close-modal"><i data-lucide="x"></i></button>
             </header>
-            <div class="modal-body" id="modal-body"></div>
-            <footer class="modal-footer">
+            <div class="modal-body" id="modal-scroll-body" style="overflow-y:auto; flex:1; padding:1.5rem;"></div>
+            <footer class="modal-footer" id="modal-footer" style="flex-shrink:0;">
                 <div id="delete-container"></div>
                 <div style="display: flex; gap: 1rem;">
                     <button class="btn btn-secondary" id="cancel-modal" data-i18n="btn_cancel">İptal</button>
@@ -204,5 +204,6 @@
             </div>
         </div>
     </div>
+    <div id="toast-container"></div>
 </body>
 </html>
