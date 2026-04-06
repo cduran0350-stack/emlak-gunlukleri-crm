@@ -1175,7 +1175,7 @@ function renderLoginConsultants() {
     container.innerHTML = `
         <div style="margin-top:1.5rem; border-top:1px solid rgba(255,255,255,0.3); padding-top:1rem;">
             <p style="font-size:0.7rem; color:rgba(255,255,255,0.7); text-align:center; margin-bottom:0.6rem; text-transform:uppercase; letter-spacing:0.06em;">
-                H\u0131zl\u0131 Giri\u015f — Dan\u0131\u015fmanlar
+                Hızlı Giriş — Danışmanlar
             </p>
             <div style="display:flex; flex-wrap:wrap; gap:0.5rem; justify-content:center;">
                 ${consultants.map(c => `
