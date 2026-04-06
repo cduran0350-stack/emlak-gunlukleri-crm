@@ -407,10 +407,10 @@ function renderBoard(category) {
 
     const sections = category === 'sale' ? [
         { key: 'group_buyers',        type: 'customers',   data: sortData(customers.filter(c => c.status !== 'Tamamlandı')) },
-        { key: 'group_sellers',       type: 'mixed',       data: sortData([...items.filter(i => i.status !== 'Satıldı'), ...customers.filter(c => c.status === 'Tamamlandı')]) },
+        { key: 'group_sellers',       type: 'mixed',       data: sortData([...items.filter(i => i.status !== 'Satıldı'), ...customers.filter(c => c.status === 'Tamamlandı' && c.seller_status !== 'Satıldı' && c.seller_status !== 'Kiralandı')]) },
         { key: 'group_sold',          type: 'properties',  data: sortData(items.filter(i => i.status === 'Satıldı')) }
     ] : [
-        { key: 'group_tenants',       type: 'customers',   data: sortData(customers) },
+        { key: 'group_tenants',       type: 'customers',   data: sortData(customers.filter(c => c.seller_status !== 'Satıldı' && c.seller_status !== 'Kiralandı')) },
         { key: 'group_rent_portfolio',type: 'properties',  data: sortData(items.filter(i => i.status !== 'Kiralandı')) },
         { key: 'group_rented',        type: 'properties',  data: sortData(items.filter(i => i.status === 'Kiralandı')) }
     ];
