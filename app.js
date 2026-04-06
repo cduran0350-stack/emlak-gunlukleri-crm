@@ -2,6 +2,56 @@
  * Emlak Günlükleri CRM - Full Automatic Translation Logic
  */
 
+// --- Firebase Initialization ---
+const firebaseConfig = {
+  apiKey: "AIzaSyDW3LGGbGmHDwuu6P3EDUXhui8ff4Wy5TU",
+  authDomain: "emlak-crm-471a4.firebaseapp.com",
+  projectId: "emlak-crm-471a4",
+  storageBucket: "emlak-crm-471a4.firebasestorage.app",
+  messagingSenderId: "323538619819",
+  appId: "1:323538619819:web:83e5a172bdead17c6dd6ee"
+};
+
+let db = null;
+if (typeof firebase !== 'undefined') {
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.firestore();
+}
+
+function initRealtimeSync() {
+    if (!db) return;
+    
+    db.collection('crm_data').doc('users').onSnapshot(doc => {
+        if (doc.exists && doc.data().data) {
+            state.users = doc.data().data;
+            localStorage.setItem('crm_users', JSON.stringify(state.users));
+            if (typeof renderLoginConsultants === 'function') renderLoginConsultants();
+        } else if (!doc.exists) {
+            db.collection('crm_data').doc('users').set({ data: state.users });
+        }
+    });
+
+    db.collection('crm_data').doc('properties').onSnapshot(doc => {
+        if (doc.exists && doc.data().data) {
+            state.items = doc.data().data;
+            localStorage.setItem('properties', JSON.stringify(state.items));
+            if (state.currentUser && (state.activeTab === 'sale' || state.activeTab === 'rent')) renderBoard(state.activeTab);
+        } else if (!doc.exists) {
+            db.collection('crm_data').doc('properties').set({ data: state.items });
+        }
+    });
+
+    db.collection('crm_data').doc('customers').onSnapshot(doc => {
+        if (doc.exists && doc.data().data) {
+            state.customers = doc.data().data;
+            localStorage.setItem('crm_customers_list', JSON.stringify(state.customers));
+            if (state.currentUser && state.activeTab === 'customers') renderCustomers();
+        } else if (!doc.exists) {
+            db.collection('crm_data').doc('customers').set({ data: state.customers });
+        }
+    });
+}
+
 // --- 1. Initial Data ---
 const defaultUsers = [
     { id: 1, username: 'admin', password: '1234', name: 'Emlak Günlükleri CRM', role: 'admin', status: 'active' },
@@ -223,6 +273,7 @@ function initApp() {
         }
     }
     initIcons();
+    initRealtimeSync();
 }
 
 function updateUTextsByLang() {
@@ -672,9 +723,18 @@ function renderConsultants() {
 // --- 6. Auth & Events ---
 
 function logout() { sessionStorage.removeItem('currentUser'); localStorage.removeItem('currentUser_persistent'); window.location.reload(); }
-function saveUsers() { localStorage.setItem('crm_users', JSON.stringify(state.users)); }
-function saveProperties() { localStorage.setItem('properties', JSON.stringify(state.items)); }
-function saveCustomers() { localStorage.setItem('crm_customers_list', JSON.stringify(state.customers)); }
+function saveUsers() { 
+    localStorage.setItem('crm_users', JSON.stringify(state.users)); 
+    if (db) db.collection('crm_data').doc('users').set({ data: state.users }).catch(e=>console.error('FB Error', e));
+}
+function saveProperties() { 
+    localStorage.setItem('properties', JSON.stringify(state.items)); 
+    if (db) db.collection('crm_data').doc('properties').set({ data: state.items }).catch(e=>console.error('FB Error', e));
+}
+function saveCustomers() { 
+    localStorage.setItem('crm_customers_list', JSON.stringify(state.customers)); 
+    if (db) db.collection('crm_data').doc('customers').set({ data: state.customers }).catch(e=>console.error('FB Error', e));
+}
 function initIcons() { if (typeof lucide !== 'undefined') lucide.createIcons(); }
 
 document.getElementById('login-submit').onclick = () => {
