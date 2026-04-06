@@ -54,8 +54,7 @@ function initRealtimeSync() {
 
 // --- 1. Initial Data ---
 const defaultUsers = [
-    { id: 1, username: 'admin', password: '1234', name: 'Emlak Günlükleri CRM', role: 'admin', status: 'active' },
-    { id: 2, username: 'ufuk', password: '1234', name: 'Ufuk', role: 'consultant', status: 'active' }
+    { id: 1, username: 'admin', password: '1234', name: 'Emlak Günlükleri CRM', role: 'admin', status: 'active' }
 ];
 
 const initialProperties = [];
