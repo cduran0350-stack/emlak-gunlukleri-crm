@@ -1008,7 +1008,8 @@ function doSaveModal() {
         const idx = state.customers.findIndex(i => i.id === updated.id);
         if (idx > -1) state.customers[idx] = updated; else state.customers.push(updated);
         saveCustomers();
-        // Notify user when customer moves to seller section or transitions status
+        
+        // Notify & Auto-Transfer Logic
         if (updated.status === 'Tamamlandı' && state.editingCustomer.status !== 'Tamamlandı') {
             updated.seller_status = 'Yeni'; // Auto-init on transition
             const msg = state.language === 'tr'
@@ -1018,7 +1019,33 @@ function doSaveModal() {
         } else if (updated.status === 'Tamamlandı' && updated.seller_status !== state.editingCustomer.seller_status) {
              const msg = state.language === 'tr' ? `Portföy durumu "${updated.seller_status}" olarak güncellendi.` : `Portfolio status updated to "${updated.seller_status}".`;
              setTimeout(() => { if(document.getElementById('toast-container')) showToast(msg, 'success'); }, 400);
+             
+             // Auto-transfer to Portfolio if Sold or Rented
+             if (updated.seller_status === 'Satıldı' || updated.seller_status === 'Kiralandı') {
+                 const newProp = {
+                     id: Date.now() + 1,
+                     prop_type: 'Bilinmiyor',
+                     name: updated.name,
+                     address: updated.interest || updated.region || '',
+                     rooms: '-',
+                     m2: '-',
+                     age: '-',
+                     usage: '-',
+                     price: '-',
+                     status: updated.seller_status,
+                     agent: updated.agent,
+                     category: updated.category || 'sale',
+                     phone: updated.phone || ''
+                 };
+                 state.items.push(newProp);
+                 saveProperties();
+                 const autoMsg = state.language === 'tr' 
+                    ? `🎉 İlan "${updated.seller_status}" olduğu için Portföy / İlanlar bölümüne kopyalandı.` 
+                    : `🎉 Copied to Portfolios because status is "${updated.seller_status}".`;
+                 setTimeout(() => { if(document.getElementById('toast-container')) showToast(autoMsg, 'success'); }, 1200);
+             }
         }
+
         if(state.activeTab === 'sale' || state.activeTab === 'rent') renderBoard(state.activeTab);
         else if (state.activeTab === 'customers') renderCustomers();
     }
