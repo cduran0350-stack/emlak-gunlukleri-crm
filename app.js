@@ -1069,11 +1069,17 @@ document.getElementById('save-consultant-btn').onclick = () => {
             role: 'consultant' 
         });
     }
-    saveUsers(); 
+    saveUsers();
     document.getElementById('consultant-modal-overlay').style.display = 'none'; 
     renderConsultants(); 
     updateAdminNav();
-    showToast(state.language === 'tr' ? 'Danışman başarıyla kaydedildi.' : 'Agent successfully saved.');
+
+    // Show credential card to admin after saving
+    const credMsg = state.language === 'tr'
+        ? `✅ <strong>${name}</strong> eklendi!<br><small>Kullanıcı: <b>${username}</b> &nbsp;|&nbsp; Şifre: <b>${password}</b></small>`
+        : `✅ <strong>${name}</strong> added!<br><small>User: <b>${username}</b> &nbsp;|&nbsp; Pass: <b>${password}</b></small>`;
+    showToast(credMsg, 'success');
+    renderLoginConsultants();
 };
 
 document.getElementById('con-show-password').onchange = (e) => {
@@ -1149,4 +1155,53 @@ document.addEventListener('click', () => {
     document.querySelectorAll('.column-filter-pop').forEach(p => p.style.display = 'none');
 });
 
-document.addEventListener('DOMContentLoaded', initApp);
+// ----------------------------------------------------------
+// Quick-login consultant cards on the login screen
+// ----------------------------------------------------------
+function renderLoginConsultants() {
+    // Always read the freshest list from storage
+    const allUsers = JSON.parse(localStorage.getItem('crm_users')) || state.users;
+    const consultants = allUsers.filter(u => u.role === 'consultant' && u.status === 'active');
+
+    let container = document.getElementById('login-consultants-section');
+    if (!container) return;   // element not in DOM yet — bail
+
+    if (consultants.length === 0) {
+        container.style.display = 'none';
+        return;
+    }
+
+    container.style.display = 'block';
+    container.innerHTML = `
+        <div style="margin-top:1.5rem; border-top:1px solid rgba(255,255,255,0.3); padding-top:1rem;">
+            <p style="font-size:0.7rem; color:rgba(255,255,255,0.7); text-align:center; margin-bottom:0.6rem; text-transform:uppercase; letter-spacing:0.06em;">
+                H\u0131zl\u0131 Giri\u015f — Dan\u0131\u015fmanlar
+            </p>
+            <div style="display:flex; flex-wrap:wrap; gap:0.5rem; justify-content:center;">
+                ${consultants.map(c => `
+                    <button onclick="quickLogin('${c.username}','${c.password}')"
+                        style="background:rgba(255,255,255,0.18); border:1px solid rgba(255,255,255,0.35); color:white;
+                               padding:0.45rem 0.9rem; border-radius:8px; cursor:pointer; font-size:0.78rem;
+                               font-family:var(--font-sans); font-weight:600; transition:all 0.2s;
+                               display:flex; align-items:center; gap:0.4rem; backdrop-filter:blur(4px);"
+                        onmouseover="this.style.background='rgba(255,255,255,0.28)'"
+                        onmouseout="this.style.background='rgba(255,255,255,0.18)'">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        ${c.name}
+                    </button>`).join('')}
+            </div>
+        </div>`;
+}
+
+window.quickLogin = (username, password) => {
+    document.getElementById('login-username').value = username;
+    document.getElementById('login-password').value = password;
+    document.getElementById('login-error').style.display = 'none';
+    // Auto-submit
+    document.getElementById('login-submit').click();
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    initApp();
+    renderLoginConsultants();
+});
