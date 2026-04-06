@@ -4,7 +4,8 @@
 
 // --- 1. Initial Data ---
 const defaultUsers = [
-    { id: 1, username: 'admin', password: '1234', name: 'Emlak Günlükleri CRM', role: 'admin', status: 'active' }
+    { id: 1, username: 'admin', password: '1234', name: 'Emlak Günlükleri CRM', role: 'admin', status: 'active' },
+    { id: 2, username: 'ufuk', password: '1234', name: 'Ufuk', role: 'consultant', status: 'active' }
 ];
 
 const initialProperties = [];
@@ -150,6 +151,18 @@ const state = {
     sortConfig: { key: null, direction: 'asc' },
     language: localStorage.getItem('crm_lang') || 'tr'
 };
+
+// Force-merge missing default users (like ufuk) into state just in case they have old cache
+let stateUsersChanged = false;
+defaultUsers.forEach(du => {
+    if (!state.users.some(u => u.username === du.username)) {
+        state.users.push(du);
+        stateUsersChanged = true;
+    }
+});
+if (stateUsersChanged) {
+    localStorage.setItem('crm_users', JSON.stringify(state.users));
+}
 
 const getInitialUser = () => {
     const persistent = JSON.parse(localStorage.getItem('currentUser_persistent'));
