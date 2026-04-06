@@ -136,15 +136,17 @@ function migrateProperties(items) {
 }
 
 const rawProperties = JSON.parse(localStorage.getItem('properties'));
+// Always load users fresh; merge defaultUsers if localStorage is empty
+const savedUsers = JSON.parse(localStorage.getItem('crm_users'));
 const state = {
     items: rawProperties ? migrateProperties(rawProperties) : initialProperties,
     customers: JSON.parse(localStorage.getItem('crm_customers_list')) || initialCustomers,
-    users: JSON.parse(localStorage.getItem('crm_users')) || defaultUsers,
+    users: savedUsers && savedUsers.length > 0 ? savedUsers : defaultUsers,
     currentUser: null,
     activeTab: 'sale',
     modalType: null,
     searchTerm: '',
-    sectionFilters: {},  // { sectionKey: { columnKey: value_or_array } }
+    sectionFilters: {},
     sortConfig: { key: null, direction: 'asc' },
     language: localStorage.getItem('crm_lang') || 'tr'
 };
@@ -175,8 +177,12 @@ function showToast(msg, type = 'success') {
 }
 
 function initApp() {
+    // Always reload users from localStorage so newly added consultants are recognized
+    const latestUsers = JSON.parse(localStorage.getItem('crm_users'));
+    if (latestUsers && latestUsers.length > 0) state.users = latestUsers;
+
     state.currentUser = getInitialUser();
-    updateUTextsByLang(); // First, translate static text
+    updateUTextsByLang();
 
     if (!state.currentUser) {
         document.getElementById('login-overlay').style.display = 'flex';
@@ -184,15 +190,20 @@ function initApp() {
     } else {
         const freshUser = state.users.find(u => u.username === state.currentUser.username);
         if (!freshUser || freshUser.status === 'passive') { logout(); return; }
-        
+        // Update currentUser with the latest data from storage
+        state.currentUser = freshUser;
+
         document.getElementById('login-overlay').style.display = 'none';
         document.getElementById('app').style.display = 'flex';
         document.getElementById('current-user-name').innerText = freshUser.name;
-        document.getElementById('current-user-role').innerText = freshUser.role === 'admin' ? (state.language === 'tr' ? 'Yönetici' : 'Admin') : (state.language === 'tr' ? 'Danışman' : 'Agent');
+        document.getElementById('current-user-role').innerText = freshUser.role === 'admin'
+            ? (state.language === 'tr' ? 'Yönetici' : 'Admin')
+            : (state.language === 'tr' ? 'Danışman' : 'Agent');
 
         if (freshUser.role === 'admin') {
             document.getElementById('admin-only-nav').style.display = 'block';
             updateAdminNav();
+            switchTab('sale');
         } else {
             document.getElementById('admin-only-nav').style.display = 'none';
             switchTab('sale');
@@ -407,18 +418,18 @@ function renderBoard(category) {
                 </div>`;
             rowsHtml = visibleData.map(c => `
                 <div class="record-row grid-cust" onclick="openCustomerDetail(${c.id})">
-                    <div class="record-cell"><span class="status-pill status-${statusMap[c.status] || 'new'}">${c.status}</span></div>
-                    <div class="record-cell" style="font-weight:600">${c.name}</div>
-                    <div class="record-cell">${c.phone}</div>
-                    <div class="record-cell">${c.region || '-'}</div>
-                    <div class="record-cell">${c.interest}</div>
-                    <div class="record-cell">${c.meeting_date || '-'}</div>
-                    <div class="record-cell" style="display:flex;align-items:center;gap:0.5rem">
+                    <div class="record-cell" data-label="${t('th_status')}"><span class="status-pill status-${statusMap[c.status] || 'new'}">${c.status}</span></div>
+                    <div class="record-cell" data-label="${t('th_cust_name')}" style="font-weight:600">${c.name}</div>
+                    <div class="record-cell" data-label="${t('th_phone')}">${c.phone}</div>
+                    <div class="record-cell" data-label="${t('th_region')}">${c.region || '-'}</div>
+                    <div class="record-cell" data-label="${t('th_interest')}">${c.interest}</div>
+                    <div class="record-cell" data-label="${t('th_meeting_date')}">${c.meeting_date || '-'}</div>
+                    <div class="record-cell" data-label="${t('th_appointment')}" style="display:flex;align-items:center;gap:0.5rem">
                         ${c.appointment_datetime || '-'}
                         ${c.appointment_datetime ? '<i data-lucide="check-circle" style="width:14px;color:var(--accent-green)"></i>' : ''}
                     </div>
-                    <div class="record-cell" style="color:var(--text-secondary);font-style:italic">${c.notes || '-'}</div>
-                    <div class="record-cell">${c.agent}</div>
+                    <div class="record-cell" data-label="${t('th_notes')}" style="color:var(--text-secondary);font-style:italic">${c.notes || '-'}</div>
+                    <div class="record-cell" data-label="${t('th_agent')}">${c.agent}</div>
                 </div>`).join('');
         } else if (section.type === 'properties') {
             const propStat = category === 'sale' ? PROP_STATUSES_SALE : PROP_STATUSES_RENT;
@@ -467,38 +478,39 @@ function renderBoard(category) {
                     ${hb(sk,'agent', t('th_agent'))}
                 </div>`;
             rowsHtml = visibleData.map(obj => {
-                const isProp = !!obj.address;
+                // Use prop_type presence as a reliable property indicator
+                const isProp = obj.prop_type !== undefined && obj.prop_type !== null;
                 const statusClass = statusMap[obj.status] || 'new';
                 return isProp ? `
                 <div class="record-row grid-mixed" onclick="openPropertyDetail(${obj.id})">
-                    <div class="record-cell"><span class="status-pill status-${statusClass}">${obj.status}</span></div>
-                    <div class="record-cell">${obj.prop_type || '-'}</div>
-                    <div class="record-cell" style="font-weight:600">${obj.name || '-'}</div>
-                    <div class="record-cell">${obj.phone || '-'}</div>
-                    <div class="record-cell">${obj.region || '-'}</div>
-                    <div class="record-cell">${obj.address || '-'}</div>
-                    <div class="record-cell">${obj.rooms || '-'}</div>
-                    <div class="record-cell">${obj.m2 || '-'}</div>
-                    <div class="record-cell">-</div>
-                    <div class="record-cell">${obj.age || '-'}</div>
-                    <div class="record-cell">${obj.usage || '-'}</div>
-                    <div class="record-cell" style="color:var(--primary);font-weight:600">${obj.price || '-'}</div>
-                    <div class="record-cell">${obj.agent}</div>
+                    <div class="record-cell" data-label="${t('th_status')}"><span class="status-pill status-${statusClass}">${obj.status}</span></div>
+                    <div class="record-cell" data-label="${t('lbl_prop_type')}">${obj.prop_type || '-'}</div>
+                    <div class="record-cell" data-label="${t('lbl_owner')}" style="font-weight:600">${obj.name || '-'}</div>
+                    <div class="record-cell" data-label="${t('th_phone')}">${obj.phone || '-'}</div>
+                    <div class="record-cell" data-label="${t('th_region')}">${obj.region || '-'}</div>
+                    <div class="record-cell" data-label="Adres">${obj.address || '-'}</div>
+                    <div class="record-cell" data-label="${t('lbl_rooms')}">${obj.rooms || '-'}</div>
+                    <div class="record-cell" data-label="m²">${obj.m2 || '-'}</div>
+                    <div class="record-cell" data-label="${t('th_notes')}">-</div>
+                    <div class="record-cell" data-label="${t('lbl_age')}">${obj.age || '-'}</div>
+                    <div class="record-cell" data-label="${t('lbl_usage')}">${obj.usage || '-'}</div>
+                    <div class="record-cell" data-label="${t('th_price')}" style="color:var(--primary);font-weight:600">${obj.price || '-'}</div>
+                    <div class="record-cell" data-label="${t('th_agent')}">${obj.agent}</div>
                 </div>` : `
                 <div class="record-row grid-mixed" onclick="openCustomerDetail(${obj.id})" style="background:rgba(22, 163, 74, 0.05); border-left: 4px solid var(--accent-green);">
-                    <div class="record-cell"><span class="status-pill status-${(obj.seller_status || 'Yeni').toLowerCase() === 'yeni' ? 'new' : (obj.seller_status || 'yeni').toLowerCase() === 'sıcak' ? 'hot' : (obj.seller_status || 'yeni').toLowerCase() === 'pazarlıkta' ? 'neg' : 'sold'}">${obj.seller_status || 'Yeni'}</span></div>
-                    <div class="record-cell"><span style="background:var(--accent-green); color:white; padding:2px 6px; border-radius:4px; font-size:0.65rem; font-weight:700; display:inline-flex; align-items:center; gap:3px;"><i data-lucide="star" style="width:10px; height:10px;"></i> SATICI</span></div>
-                    <div class="record-cell" style="font-weight:600"><i data-lucide="user" style="width:13px;margin-right:4px"></i>${obj.name}</div>
-                    <div class="record-cell">${obj.phone || '-'}</div>
-                    <div class="record-cell">${obj.region || '-'}</div>
-                    <div class="record-cell">${obj.interest || '-'}</div>
-                    <div class="record-cell">-</div>
-                    <div class="record-cell">-</div>
-                    <div class="record-cell" style="font-style:italic;font-size:0.8rem; color:var(--text-secondary)">${obj.notes || '-'}</div>
-                    <div class="record-cell">-</div>
-                    <div class="record-cell">-</div>
-                    <div class="record-cell">-</div>
-                    <div class="record-cell">${obj.agent}</div>
+                    <div class="record-cell" data-label="${t('th_status')}"><span class="status-pill status-${(obj.seller_status || 'Yeni').toLowerCase() === 'yeni' ? 'new' : (obj.seller_status || 'yeni').toLowerCase() === 'sıcak' ? 'hot' : (obj.seller_status || 'yeni').toLowerCase() === 'pazarlıkta' ? 'neg' : 'sold'}">${obj.seller_status || 'Yeni'}</span></div>
+                    <div class="record-cell" data-label="Tip"><span style="background:var(--accent-green); color:white; padding:2px 6px; border-radius:4px; font-size:0.65rem; font-weight:700; display:inline-flex; align-items:center; gap:3px;"><i data-lucide="star" style="width:10px; height:10px;"></i> SATICI</span></div>
+                    <div class="record-cell" data-label="${t('th_cust_name')}" style="font-weight:600">${obj.name}</div>
+                    <div class="record-cell" data-label="${t('th_phone')}">${obj.phone || '-'}</div>
+                    <div class="record-cell" data-label="${t('th_region')}">${obj.region || '-'}</div>
+                    <div class="record-cell" data-label="${t('th_interest')}">${obj.interest || '-'}</div>
+                    <div class="record-cell" data-label="Oda">-</div>
+                    <div class="record-cell" data-label="m²">-</div>
+                    <div class="record-cell" data-label="${t('th_notes')}" style="font-style:italic;font-size:0.8rem; color:var(--text-secondary)">${obj.notes || '-'}</div>
+                    <div class="record-cell" data-label="${t('lbl_age')}">-</div>
+                    <div class="record-cell" data-label="${t('lbl_usage')}">-</div>
+                    <div class="record-cell" data-label="${t('th_price')}">-</div>
+                    <div class="record-cell" data-label="${t('th_agent')}">${obj.agent}</div>
                 </div>`;
             }).join('');
         }
@@ -566,7 +578,7 @@ function renderCustomers() {
 
         const rowsHtml = groupFiltered.map(c => `
             <div class="record-row grid-cust" onclick="openCustomerDetail(${c.id})">
-                <div class="record-cell"><span class="status-pill status-${statusMap[status]}">${status}</span></div>
+                <div class="record-cell" data-label="${t('th_status')}"><span class="status-pill status-${statusMap[status]}">${status}</span></div>
                 <div class="record-cell" data-label="${t('th_cust_name')}" style="font-weight:600">${c.name}</div>
                 <div class="record-cell" data-label="${t('th_phone')}">${c.phone}</div>
                 <div class="record-cell" data-label="${t('th_region')}">${c.region || '-'}</div>
@@ -655,17 +667,28 @@ function initIcons() { if (typeof lucide !== 'undefined') lucide.createIcons(); 
 document.getElementById('login-submit').onclick = () => {
     const u = document.getElementById('login-username').value.trim();
     const p = document.getElementById('login-password').value.trim();
-    // Ensure we search the most up-to-date users list
+    // CRITICAL: Reload users from localStorage every time login is attempted
+    // This ensures newly added consultant accounts are always recognized
+    const latestUsers = JSON.parse(localStorage.getItem('crm_users'));
+    if (latestUsers && latestUsers.length > 0) state.users = latestUsers;
+
     const user = state.users.find(x => x.username.toLowerCase() === u.toLowerCase() && x.password === p);
     
     if (user) {
         if (user.status === 'passive') { 
-            showToast(t('msg_no_auth'), 'error'); 
+            const errEl = document.getElementById('login-error');
+            errEl.innerText = t('msg_no_auth');
+            errEl.style.display = 'block';
             return; 
         }
         state.currentUser = user;
-        if (document.getElementById('login-remember').checked) localStorage.setItem('currentUser_persistent', JSON.stringify({ user, expiry: Date.now() + 604800000 }));
-        else sessionStorage.setItem('currentUser', JSON.stringify(user));
+        const errEl = document.getElementById('login-error');
+        errEl.style.display = 'none';
+        if (document.getElementById('login-remember').checked) {
+            localStorage.setItem('currentUser_persistent', JSON.stringify({ user, expiry: Date.now() + 604800000 }));
+        } else {
+            sessionStorage.setItem('currentUser', JSON.stringify(user));
+        }
         initApp();
     } else { 
         const errEl = document.getElementById('login-error');
@@ -748,7 +771,7 @@ window.openPropertyDetail = (id) => {
 
     const scrollBody = document.getElementById('modal-scroll-body');
     scrollBody.innerHTML = `
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+        <div class="form-grid-2">
             <div class="form-group"><label class="form-label">${t('th_category')}</label>
                 <select id="p-category" class="form-select" onchange="updatePropStatuses(this.value)">
                     <option value="sale" ${state.editingItem.category === 'sale' ? 'selected' : ''}>${t('opt_sale')}</option>
@@ -759,7 +782,7 @@ window.openPropertyDetail = (id) => {
                 <select id="p-status" class="form-select">${(state.editingItem.category === 'sale' ? ['Yeni','Sıcak','Pazarlıkta','Satıldı'] : ['Yeni','Sıcak','Pazarlıkta','Kiralandı']).map(s => `<option value="${s}" ${state.editingItem.status === s ? 'selected' : ''}>${s}</option>`).join('')}</select>
             </div>
         </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+        <div class="form-grid-2">
              <div class="form-group"><label class="form-label">${t('lbl_prop_type')}</label>
                 <select id="p-type" class="form-select">
                     ${['Daire','Villa','Lüks Konut','Arsa'].map(o => `<option value="${o}" ${state.editingItem.prop_type === o ? 'selected' : ''}>${o}</option>`).join('')}
@@ -768,11 +791,11 @@ window.openPropertyDetail = (id) => {
             <div class="form-group"><label class="form-label">${t('lbl_owner')}</label><input type="text" id="p-name" class="form-input" value="${state.editingItem.name || ''}"></div>
         </div>
         <div class="form-group"><label class="form-label">${t('th_phone')} (${t('lbl_owner')})</label><input type="tel" id="p-phone" class="form-input" placeholder="05xx xxx xx xx" value="${state.editingItem.phone || ''}"></div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+        <div class="form-grid-2">
             <div class="form-group"><label class="form-label">${t('th_region')}</label><input type="text" id="p-region" class="form-input" placeholder="Lara, Konyaaltı vs." value="${state.editingItem.region || ''}"></div>
             <div class="form-group"><label class="form-label">${t('lbl_address_loc')}</label><input type="text" id="p-address" class="form-input" value="${state.editingItem.address || ''}"></div>
         </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem;">
+        <div class="form-grid-3">
             <div class="form-group"><label class="form-label">${t('lbl_rooms')}</label>
                 <select id="p-rooms" class="form-select">
                     ${['1+1','2+1','3+1','4+1','4+2','5+1','5+2','6+1','6+2','7+'].map(o => `<option value="${o}" ${state.editingItem.rooms === o ? 'selected' : ''}>${o}</option>`).join('')}
@@ -781,7 +804,7 @@ window.openPropertyDetail = (id) => {
             <div class="form-group"><label class="form-label">m2 (Net)</label><input type="text" id="p-m2" class="form-input" value="${state.editingItem.m2 || ''}"></div>
             <div class="form-group"><label class="form-label">${t('lbl_age')}</label><input type="text" id="p-age" class="form-input" value="${state.editingItem.age || ''}"></div>
         </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+        <div class="form-grid-2">
             <div class="form-group"><label class="form-label">${t('lbl_usage')}</label>
                 <select id="p-usage" class="form-select">
                     ${['Boş','Kiracı','Mülk Sahibi'].map(o => `<option value="${o}" ${state.editingItem.usage === o ? 'selected' : ''}>${o}</option>`).join('')}
@@ -816,7 +839,7 @@ window.openCustomerDetail = (id) => {
     const cat = state.editingCustomer.category || 'sale';
     const scrollBody = document.getElementById('modal-scroll-body');
     scrollBody.innerHTML = `
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+        <div class="form-grid-2">
             <div class="form-group"><label class="form-label">${t('th_category')}</label>
                 <select id="c-category" class="form-select">
                     <option value="sale" ${cat === 'sale' ? 'selected' : ''}>${t('opt_sale')}</option>
@@ -838,9 +861,9 @@ window.openCustomerDetail = (id) => {
         <div class="form-group"><label class="form-label">${t('th_phone')}</label><input type="text" id="c-phone" class="form-input" value="${state.editingCustomer.phone || ''}"></div>
         <div class="form-group"><label class="form-label">${t('th_region')}</label><input type="text" id="c-region" class="form-input" placeholder="Kadıköy, Lara vs." value="${state.editingCustomer.region || ''}"></div>
         <div class="form-group"><label class="form-label">${t('th_interest')}</label><input type="text" id="c-interest" class="form-input" value="${state.editingCustomer.interest || ''}"></div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+        <div class="form-grid-2">
             <div class="form-group"><label class="form-label">${t('th_meeting_date')}</label><input type="date" id="c-meeting-date" class="form-input" value="${state.editingCustomer.meeting_date || ''}"></div>
-            <div class="form-group" style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+            <div class="form-group form-grid-2" style="gap:0.5rem; margin-bottom:0;">
                 <div>
                     <label class="form-label">Randevu Tarihi</label>
                     <input type="date" id="c-app-date" class="form-input" value="${(state.editingCustomer.appointment_datetime || '').split(' ')[0] || ''}">
@@ -890,7 +913,7 @@ function doSaveModal() {
         if(state.activeTab === 'sale' || state.activeTab === 'rent') renderBoard(state.activeTab);
     } else if (state.modalType === 'customer') {
         const name = document.getElementById('c-name').value.trim(); const phone = document.getElementById('c-phone').value.trim(); const interest = document.getElementById('c-interest').value.trim();
-        if(!name || !phone || !interest) { alert(t('msg_required_fields')); return; }
+        if(!name || !phone || !interest) { showToast(t('msg_required_fields'), 'error'); return; }
         
         const appDate = document.getElementById('c-app-date').value;
         const appTime = document.getElementById('c-app-time').value.trim();
@@ -1017,7 +1040,7 @@ document.getElementById('save-consultant-btn').onclick = () => {
     const status = document.getElementById('con-status').value;
     
     if (!name || !username || !password) {
-        alert(t('msg_required_fields'));
+        showToast(t('msg_required_fields'), 'error');
         return;
     }
 

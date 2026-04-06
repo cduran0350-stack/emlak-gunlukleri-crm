@@ -599,6 +599,18 @@ body {
    ============================================ */
 .form-group { margin-bottom: 1rem; }
 
+/* Responsive form grid helpers */
+.form-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+.form-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+}
+
 .form-label {
     display: block;
     margin-bottom: 0.4rem;
@@ -756,28 +768,36 @@ textarea.form-input { resize: vertical; }
 
     .sidebar.visible { left: 0; }
 
-    /* Floating toggle button */
+    /* Floating toggle button — now top-left sticky bar style */
     .mobile-nav-toggle {
         display: flex !important;
         position: fixed;
-        bottom: 1.5rem;
-        right: 1.5rem;
-        width: 52px;
+        top: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
         height: 52px;
         background: var(--primary);
         color: white;
-        border-radius: 50%;
+        border-radius: 0;
         align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 16px rgba(79, 70, 229, 0.4);
+        justify-content: flex-start;
+        padding: 0 1rem;
+        box-shadow: 0 2px 8px rgba(79, 70, 229, 0.35);
         z-index: 201;
         cursor: pointer;
+        gap: 0.75rem;
+        font-family: var(--font-heading);
+        font-weight: 600;
+        font-size: 1rem;
     }
-    .mobile-nav-toggle i { width: 22px; height: 22px; }
+    .mobile-nav-toggle i { width: 24px; height: 24px; }
+    .mobile-nav-toggle::after { content: 'Emlak Günlükleri CRM'; }
 
-    /* Main header */
+    /* Main header — push down below mobile toggle bar */
     .main-header {
         padding: 0.75rem 1rem;
+        padding-top: calc(52px + 0.75rem);
         height: auto;
         flex-direction: column;
         align-items: flex-start;
@@ -876,16 +896,18 @@ textarea.form-input { resize: vertical; }
         padding-top: 0.15rem;
     }
 
-    /* Hide cells without data-label (non-critical columns) */
+    /* Hide cells that have no data-label (truly non-critical) */
     .record-cell:not([data-label]) {
         display: none;
     }
 
-    /* Always show first cell (status pill) regardless */
-    .record-cell:first-child {
-        display: flex !important;
+    /* Status pill row — no label prefix needed */
+    .record-cell[data-label]:first-child::before {
+        display: none;
     }
-    .record-cell:first-child::before { display: none; }
+    .record-cell[data-label]:first-child {
+        margin-bottom: 0.25rem;
+    }
 
     /* Login mobile */
     .login-card {
@@ -957,10 +979,16 @@ textarea.form-input { resize: vertical; }
     /* Group header */
     .group-header h2 { font-size: 0.95rem; }
 
-    /* Toast */
-    #toast-container { right: 12px; bottom: 80px; max-width: calc(100vw - 24px); }
+    /* Toast — show above safe area */
+    #toast-container { right: 12px; bottom: 16px; max-width: calc(100vw - 24px); }
 
-    /* Form grids collapse on mobile */
+    /* Form grids collapse on mobile — CSS class version (reliable) */
+    .form-grid-2,
+    .form-grid-3 {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Inline style grid fallback (keep for any dynamically injected grids) */
     [style*="grid-template-columns:1fr 1fr"],
     [style*="grid-template-columns: 1fr 1fr"],
     [style*="grid-template-columns:1fr 1fr 1fr"],
