@@ -4,22 +4,12 @@
 
 // --- 1. Initial Data ---
 const defaultUsers = [
-    { id: 1, username: 'admin', password: '1234', name: 'Emlak Günlükleri CRM', role: 'admin', status: 'active' },
-    { id: 2, username: 'ayse', password: '1234', name: 'Ayşe Nur', role: 'consultant', status: 'active' },
-    { id: 3, username: 'mehmet', password: '1234', name: 'Mehmet Y.', role: 'consultant', status: 'active' }
+    { id: 1, username: 'admin', password: '1234', name: 'Emlak Günlükleri CRM', role: 'admin', status: 'active' }
 ];
 
-const initialProperties = [
-    { id: 101, category: 'sale', prop_type: 'Daire', name: 'Ayşe Nur', phone: '', region: 'Konyaaltı', address: 'Antalya Konyaaltı Cad. No:5', rooms: '3+1', m2: '145', age: '5', usage: 'Boş', price: '4.500.000 TL', status: 'Sıcak', agent: 'Ayşe Nur' },
-    { id: 102, category: 'sale', prop_type: 'Villa', name: 'Mustafa Bey', phone: '', region: 'Döşemealtı', address: 'Döşemealtı villalar bölgesi', rooms: '5+2', m2: '450', age: '0', usage: 'Boş', price: '12.000.000 TL', status: 'Yeni', agent: 'Mehmet Y.' },
-    { id: 103, category: 'rent', prop_type: 'Daire', name: 'Zeynep Hanım', phone: '', region: 'Lara', address: 'Lara fener mah.', rooms: '2+1', m2: '95', age: '12', usage: 'Kiracı', price: '15.000 TL', status: 'Yeni', agent: 'Ayşe Nur' }
-];
+const initialProperties = [];
 
-const initialCustomers = [
-    { id: 1, name: 'Ali Yılmaz', phone: '0532 000 0001', email: 'ali@email.com', interest: 'Lüks Daire', region: 'Beşiktaş', meeting_date: '2026-04-05', appointment_datetime: '2026-04-06 14:00', notes: 'Bütçesi uygun, kredi bekliyor.', status: 'Yeni', agent: 'Ayşe Nur', category: 'sale' },
-    { id: 2, name: 'Elif Kaya', phone: '0544 000 0002', email: 'elif@email.com', interest: 'Bahçeli Villa', region: 'Antalya', meeting_date: '2026-04-04', appointment_datetime: '', notes: 'Deniz kenarı istiyor.', status: 'Arandı', agent: 'Mehmet Y.', category: 'sale' },
-    { id: 3, name: 'Caner Demir', phone: '0555 000 0003', email: 'caner@email.com', interest: 'Stüdyo Daire', region: 'Kadıköy', meeting_date: '2026-04-05', appointment_datetime: '2026-04-07 10:00', notes: 'Üniversiteye yakın olmalı.', status: 'Yeni', agent: 'Ayşe Nur', category: 'rent' }
-];
+const initialCustomers = [];
 
 // --- 2. Translation Context ---
 const translations = {
@@ -61,7 +51,17 @@ const translations = {
         old_psw: 'Eski Şifre', new_psw: 'Yeni Şifre', new_psw_repeat: 'Yeni Şifre (Yeniden)',
         msg_required_fields: 'Lütfen zorunlu alanları doldurun!',
         msg_psw_success: 'Şifre güncellendi.',
-        msg_psw_mismatch: 'Şifreler eşleşmiyor!'
+        msg_psw_mismatch: 'Şifreler eşleşmiyor!',
+        msg_login_err: 'Hatalı kullanıcı adı veya şifre!',
+        msg_username_exists: 'Bu kullanıcı adı zaten mevcut!',
+        msg_no_auth: 'Bu işlem için yetkiniz yok!',
+        th_company: 'Şirket',
+        lbl_prop_type: 'Mülk Tipi',
+        lbl_owner: 'Mülk Sahibi',
+        lbl_rooms: 'Oda Sayısı',
+        lbl_usage: 'Kullanım Durumu',
+        lbl_age: 'Bina Yaşı',
+        lbl_address_loc: 'Adres / Konum'
     },
     en: {
         nav_sale: 'For Sale',
@@ -94,7 +94,17 @@ const translations = {
         old_psw: 'Current Password', new_psw: 'New Password', new_psw_repeat: 'Confirm Password',
         msg_required_fields: 'Please fill all required fields!',
         msg_psw_success: 'Security updated.',
-        msg_psw_mismatch: 'Passwords do not match!'
+        msg_psw_mismatch: 'Passwords do not match!',
+        msg_login_err: 'Invalid username or password!',
+        msg_username_exists: 'Username already exists!',
+        msg_no_auth: 'No permission for this action!',
+        th_company: 'Company',
+        lbl_prop_type: 'Property Type',
+        lbl_owner: 'Owner Name',
+        lbl_rooms: 'Rooms',
+        lbl_usage: 'Usage Status',
+        lbl_age: 'Building Age',
+        lbl_address_loc: 'Address / Location'
     }
 };
 
@@ -266,7 +276,8 @@ function switchTab(tab) {
         renderCustomers();
     } else if (tab === 'consultants') {
         document.getElementById('board-title').innerText = t('board_title_con');
-        document.getElementById('add-item-btn').style.display = 'none';
+        document.getElementById('add-item-btn').style.display = 'flex';
+        document.getElementById('add-item-btn').innerHTML = `<i data-lucide="user-plus"></i> ${t('btn_add_con')}`;
         renderConsultants();
     }
     initIcons();
@@ -302,8 +313,8 @@ function renderBoard(category) {
     
     if (state.searchTerm) {
         const term = state.searchTerm.toLowerCase();
-        items = items.filter(i => i.name.toLowerCase().includes(term) || i.address.toLowerCase().includes(term));
-        customers = customers.filter(c => c.name.toLowerCase().includes(term) || c.interest.toLowerCase().includes(term));
+        items = items.filter(i => (i.name || '').toLowerCase().includes(term) || (i.address || '').toLowerCase().includes(term));
+        customers = customers.filter(c => (c.name || '').toLowerCase().includes(term) || (c.interest || '').toLowerCase().includes(term));
     }
 
     // Per-section column filters are applied via the module-level applyFilters()
@@ -426,16 +437,16 @@ function renderBoard(category) {
                 </div>`;
             rowsHtml = visibleData.map(item => `
                 <div class="record-row grid-prop" onclick="openPropertyDetail(${item.id})">
-                    <div class="record-cell"><span class="status-pill status-${statusMap[item.status] || 'new'}">${item.status}</span></div>
-                    <div class="record-cell">${item.prop_type || '-'}</div>
-                    <div class="record-cell" style="font-weight:600">${item.name || '-'}</div>
-                    <div class="record-cell">${item.address || '-'}</div>
-                    <div class="record-cell">${item.rooms || '-'}</div>
-                    <div class="record-cell">${item.m2 || '-'}</div>
-                    <div class="record-cell">${item.age || '-'}</div>
-                    <div class="record-cell">${item.usage || '-'}</div>
-                    <div class="record-cell" style="color:var(--primary);font-weight:600">${item.price || '-'}</div>
-                    <div class="record-cell">${item.agent}</div>
+                    <div class="record-cell" data-label="${t('th_status')}"><span class="status-pill status-${statusMap[item.status] || 'new'}">${item.status}</span></div>
+                    <div class="record-cell" data-label="${t('lbl_prop_type')}">${item.prop_type || '-'}</div>
+                    <div class="record-cell" data-label="${t('lbl_owner')}" style="font-weight:600">${item.name || '-'}</div>
+                    <div class="record-cell" data-label="${t('lbl_address_loc')}">${item.address || '-'}</div>
+                    <div class="record-cell" data-label="${t('lbl_rooms')}">${item.rooms || '-'}</div>
+                    <div class="record-cell" data-label="m2">${item.m2 || '-'}</div>
+                    <div class="record-cell" data-label="${t('lbl_age')}">${item.age || '-'}</div>
+                    <div class="record-cell" data-label="${t('lbl_usage')}">${item.usage || '-'}</div>
+                    <div class="record-cell" data-label="${t('th_price')}" style="color:var(--primary);font-weight:600">${item.price || '-'}</div>
+                    <div class="record-cell" data-label="${t('th_agent')}">${item.agent}</div>
                 </div>`).join('');
         } else if (section.type === 'mixed') {
             const allStat = [...PROP_STATUSES_SALE,...CUST_STATUSES].filter((v,i,a)=>a.indexOf(v)===i);
@@ -519,7 +530,7 @@ function renderCustomers() {
 
     if (state.searchTerm) {
         const term = state.searchTerm.toLowerCase();
-        custs = custs.filter(c => c.name.toLowerCase().includes(term) || c.email.toLowerCase().includes(term));
+        custs = custs.filter(c => c.name.toLowerCase().includes(term) || (c.email || '').toLowerCase().includes(term));
     }
 
     const statuses = ['Yeni', 'Görüşüldü', 'Randevu Alındı', 'Tamamlandı'];
@@ -556,17 +567,17 @@ function renderCustomers() {
         const rowsHtml = groupFiltered.map(c => `
             <div class="record-row grid-cust" onclick="openCustomerDetail(${c.id})">
                 <div class="record-cell"><span class="status-pill status-${statusMap[status]}">${status}</span></div>
-                <div class="record-cell" style="font-weight:600">${c.name}</div>
-                <div class="record-cell">${c.phone}</div>
-                <div class="record-cell">${c.region || '-'}</div>
-                <div class="record-cell">${c.interest || '-'}</div>
-                <div class="record-cell">${c.meeting_date || '-'}</div>
-                <div class="record-cell" style="display:flex; align-items:center; gap:0.5rem">
+                <div class="record-cell" data-label="${t('th_cust_name')}" style="font-weight:600">${c.name}</div>
+                <div class="record-cell" data-label="${t('th_phone')}">${c.phone}</div>
+                <div class="record-cell" data-label="${t('th_region')}">${c.region || '-'}</div>
+                <div class="record-cell" data-label="${t('th_interest')}">${c.interest || '-'}</div>
+                <div class="record-cell" data-label="${t('th_meeting_date')}">${c.meeting_date || '-'}</div>
+                <div class="record-cell" data-label="${t('th_appointment')}" style="display:flex; align-items:center; gap:0.5rem">
                     ${c.appointment_datetime || '-'}
                     ${c.appointment_datetime ? '<i data-lucide="check-circle" style="width:14px; color:var(--accent-green)"></i>' : ''}
                 </div>
-                <div class="record-cell" style="color:var(--text-secondary); font-style:italic">${c.notes || '-'}</div>
-                <div class="record-cell">${c.agent}</div>
+                <div class="record-cell" data-label="${t('th_notes')}" style="color:var(--text-secondary); font-style:italic">${c.notes || '-'}</div>
+                <div class="record-cell" data-label="${t('th_agent')}">${c.agent}</div>
             </div>`).join('');
         const headerHtml = `
             <div class="record-header grid-cust">
@@ -605,16 +616,31 @@ function renderCustomers() {
 function renderConsultants() {
     const cons = state.users.filter(u => u.role === 'consultant');
     const boardView = document.getElementById('board-view');
-    boardView.innerHTML = `<table class="board-table" style="margin-top: 1rem;">
-        <thead><tr><th>${t('th_cust_name')}</th><th>${t('login_user')}</th><th>${t('th_status')}</th><th>${t('th_actions')}</th></tr></thead>
+    const nameLabel   = t('th_cust_name');
+    const compLabel   = t('th_company');
+    const phoneLabel  = t('th_phone');
+    const userLabel   = t('login_user');
+    const statLabel   = t('th_status');
+    const actLabel    = t('th_actions');
+    boardView.innerHTML = `<div style="background:var(--white);border-radius:var(--radius-md);border:1px solid var(--border);overflow:hidden;margin-top:0.5rem;">
+    <table class="board-table">
+        <thead><tr>
+            <th>${nameLabel}</th><th>${compLabel}</th><th>${phoneLabel}</th>
+            <th>${userLabel}</th><th>${statLabel}</th><th>${actLabel}</th>
+        </tr></thead>
         <tbody>${cons.map(c => `<tr>
-            <td>${c.name}</td><td>${c.username}</td>
-            <td><span class="status-pill status-${c.status === 'active' ? 'sold' : 'hot'}">${c.status === 'active' ? (state.language==='tr'?'Aktif':'Active') : (state.language==='tr'?'Pasif':'Locked')}</span></td>
-            <td><button class="btn btn-secondary" onclick="openConsultantEdit(${c.id})"><i data-lucide="edit-3"></i></button>
+            <td data-label="${nameLabel}" style="font-weight:600">${c.name}</td>
+            <td data-label="${compLabel}">${c.company || '-'}</td>
+            <td data-label="${phoneLabel}">${c.phone || '-'}</td>
+            <td data-label="${userLabel}">${c.username}</td>
+            <td data-label="${statLabel}"><span class="status-pill status-${c.status === 'active' ? 'sold' : 'hot'}">${c.status === 'active' ? (state.language==='tr'?'Aktif':'Active') : (state.language==='tr'?'Pasif':'Locked')}</span></td>
+            <td data-label="${actLabel}">
+                <button class="btn btn-secondary" onclick="openConsultantEdit(${c.id})"><i data-lucide="edit-3"></i></button>
                 <button class="btn btn-secondary" style="color:var(--accent-red)" onclick="deleteConsultant(${c.id})"><i data-lucide="trash-2"></i></button>
-                <button class="btn btn-secondary" onclick="toggleUserStatus(${c.id})">${c.status === 'active' ? (state.language==='tr'?'Pasif Yap':'Lock') : (state.language==='tr'?'Aktif Yap':'Unlock')}</button></td>
+                <button class="btn btn-secondary" onclick="toggleUserStatus(${c.id})">${c.status === 'active' ? (state.language==='tr'?'Pasif Yap':'Lock') : (state.language==='tr'?'Aktif Yap':'Unlock')}</button>
+            </td>
         </tr>`).join('')}</tbody>
-    </table>`;
+    </table></div>`;
     initIcons();
 }
 
@@ -629,14 +655,28 @@ function initIcons() { if (typeof lucide !== 'undefined') lucide.createIcons(); 
 document.getElementById('login-submit').onclick = () => {
     const u = document.getElementById('login-username').value.trim();
     const p = document.getElementById('login-password').value.trim();
-    const user = state.users.find(x => x.username === u && x.password === p);
+    // Ensure we search the most up-to-date users list
+    const user = state.users.find(x => x.username.toLowerCase() === u.toLowerCase() && x.password === p);
+    
     if (user) {
-        if (user.status === 'passive') { alert('Err'); return; }
+        if (user.status === 'passive') { 
+            showToast(t('msg_no_auth'), 'error'); 
+            return; 
+        }
         state.currentUser = user;
         if (document.getElementById('login-remember').checked) localStorage.setItem('currentUser_persistent', JSON.stringify({ user, expiry: Date.now() + 604800000 }));
         else sessionStorage.setItem('currentUser', JSON.stringify(user));
         initApp();
-    } else { document.getElementById('login-error').innerText = 'Hata!'; document.getElementById('login-error').style.display = 'block'; }
+    } else { 
+        const errEl = document.getElementById('login-error');
+        errEl.innerText = t('msg_login_err'); 
+        errEl.style.display = 'block'; 
+    }
+};
+
+// Login Password Toggle
+document.getElementById('show-password').onchange = (e) => {
+    document.getElementById('login-password').type = e.target.checked ? 'text' : 'password';
 };
 
 document.getElementById('logout-btn').onclick = logout;
@@ -654,9 +694,15 @@ document.getElementById('save-user-password').onclick = () => {
     const n = document.getElementById('new-password').value;
     const r = document.getElementById('new-password-repeat').value;
     let me = state.users.find(x => x.username === state.currentUser.username);
-    if (old !== me.password) { alert('Hata!'); return; }
-    if (n !== r || n.length < 4) { alert(t('msg_psw_mismatch')); return; }
-    me.password = n; saveUsers(); document.getElementById('user-settings-modal').style.display = 'none'; alert(t('msg_psw_success'));
+    if (old !== me.password) { showToast(t('msg_login_err'), 'error'); return; }
+    if (n !== r || n.length < 4) { showToast(t('msg_psw_mismatch'), 'error'); return; }
+    me.password = n; saveUsers(); document.getElementById('user-settings-modal').style.display = 'none'; showToast(t('msg_psw_success'));
+};
+
+document.getElementById('user-show-password').onchange = (e) => {
+    ['old-password', 'new-password', 'new-password-repeat'].forEach(id => {
+        document.getElementById(id).type = e.target.checked ? 'text' : 'password';
+    });
 };
 
 // Close modals via event delegation (handles dynamically injected buttons)
@@ -672,9 +718,11 @@ document.getElementById('add-item-btn').onclick = () => {
     if (state.activeTab === 'sale' || state.activeTab === 'rent') {
         state.editingItem = { id: Date.now(), prop_type: 'Daire', name: '', address: '', rooms: '3+1', m2: '', age: '', usage: 'Boş', price: '', status: 'Yeni', agent: state.currentUser.name, category: state.activeTab };
         openPropertyDetail(state.editingItem.id);
-    } else {
+    } else if (state.activeTab === 'customers') {
         state.editingCustomer = { id: Date.now(), name: '', phone: '', email: '', interest: '', status: 'Yeni', agent: state.currentUser.name, category: 'sale' };
         openCustomerDetail(state.editingCustomer.id);
+    } else if (state.activeTab === 'consultants') {
+        openConsultantAdd();
     }
 };
 
@@ -682,6 +730,7 @@ window.openPropertyDetail = (id) => {
     state.modalType = 'property';
     state.editingItem = { ...(state.items.find(x => x.id === id) || state.editingItem) };
     const isAdmin = state.currentUser.role === 'admin';
+    const isOwner = state.editingItem.agent === state.currentUser.name;
     const agents = state.users.filter(u => u.role === 'consultant');
 
     // Set modal title
@@ -690,7 +739,7 @@ window.openPropertyDetail = (id) => {
     // Set modal footer
     document.getElementById('modal-footer').innerHTML = `
         <div id="delete-container">
-            ${isAdmin ? `<button class="btn btn-secondary" style="color:var(--accent-red)" onclick="deleteProperty(${state.editingItem.id})"><i data-lucide="trash-2"></i> Sil</button>` : ''}
+            ${(isAdmin || isOwner) ? `<button class="btn btn-secondary" style="color:var(--accent-red)" onclick="deleteProperty(${state.editingItem.id})"><i data-lucide="trash-2"></i> Sil</button>` : ''}
         </div>
         <div style="display:flex; gap:1rem;">
             <button class="btn btn-secondary" id="cancel-modal">${t('btn_cancel')}</button>
@@ -711,34 +760,34 @@ window.openPropertyDetail = (id) => {
             </div>
         </div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
-             <div class="form-group"><label class="form-label">Mülk Tipi</label>
+             <div class="form-group"><label class="form-label">${t('lbl_prop_type')}</label>
                 <select id="p-type" class="form-select">
                     ${['Daire','Villa','Lüks Konut','Arsa'].map(o => `<option value="${o}" ${state.editingItem.prop_type === o ? 'selected' : ''}>${o}</option>`).join('')}
                 </select>
             </div>
-            <div class="form-group"><label class="form-label">Ad Soyad (Mülk Sahibi)</label><input type="text" id="p-name" class="form-input" value="${state.editingItem.name || ''}"></div>
+            <div class="form-group"><label class="form-label">${t('lbl_owner')}</label><input type="text" id="p-name" class="form-input" value="${state.editingItem.name || ''}"></div>
         </div>
-        <div class="form-group"><label class="form-label">Telefon (Mülk Sahibi)</label><input type="tel" id="p-phone" class="form-input" placeholder="05xx xxx xx xx" value="${state.editingItem.phone || ''}"></div>
+        <div class="form-group"><label class="form-label">${t('th_phone')} (${t('lbl_owner')})</label><input type="tel" id="p-phone" class="form-input" placeholder="05xx xxx xx xx" value="${state.editingItem.phone || ''}"></div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
             <div class="form-group"><label class="form-label">${t('th_region')}</label><input type="text" id="p-region" class="form-input" placeholder="Lara, Konyaaltı vs." value="${state.editingItem.region || ''}"></div>
-            <div class="form-group"><label class="form-label">Adres / Konum</label><input type="text" id="p-address" class="form-input" value="${state.editingItem.address || ''}"></div>
+            <div class="form-group"><label class="form-label">${t('lbl_address_loc')}</label><input type="text" id="p-address" class="form-input" value="${state.editingItem.address || ''}"></div>
         </div>
         <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem;">
-            <div class="form-group"><label class="form-label">Oda Sayısı</label>
+            <div class="form-group"><label class="form-label">${t('lbl_rooms')}</label>
                 <select id="p-rooms" class="form-select">
                     ${['1+1','2+1','3+1','4+1','4+2','5+1','5+2','6+1','6+2','7+'].map(o => `<option value="${o}" ${state.editingItem.rooms === o ? 'selected' : ''}>${o}</option>`).join('')}
                 </select>
             </div>
             <div class="form-group"><label class="form-label">m2 (Net)</label><input type="text" id="p-m2" class="form-input" value="${state.editingItem.m2 || ''}"></div>
-            <div class="form-group"><label class="form-label">Bina Yaşı</label><input type="text" id="p-age" class="form-input" value="${state.editingItem.age || ''}"></div>
+            <div class="form-group"><label class="form-label">${t('lbl_age')}</label><input type="text" id="p-age" class="form-input" value="${state.editingItem.age || ''}"></div>
         </div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
-            <div class="form-group"><label class="form-label">Kullanım Durumu</label>
+            <div class="form-group"><label class="form-label">${t('lbl_usage')}</label>
                 <select id="p-usage" class="form-select">
                     ${['Boş','Kiracı','Mülk Sahibi'].map(o => `<option value="${o}" ${state.editingItem.usage === o ? 'selected' : ''}>${o}</option>`).join('')}
                 </select>
             </div>
-            <div class="form-group"><label class="form-label">Fiyat</label><input type="text" id="p-price" class="form-input" value="${state.editingItem.price}"></div>
+            <div class="form-group"><label class="form-label">${t('th_price')}</label><input type="text" id="p-price" class="form-input" value="${state.editingItem.price}"></div>
         </div>
         <div class="form-group" style="${isAdmin ? '' : 'display:none'}"><label class="form-label">${t('th_agent')}</label>
             <select id="p-agent" class="form-select">${agents.map(a => `<option value="${a.name}" ${state.editingItem.agent === a.name ? 'selected' : ''}>${a.name}</option>`).join('')}</select>
@@ -755,12 +804,13 @@ window.openCustomerDetail = (id) => {
     state.modalType = 'customer';
     state.editingCustomer = { ...(state.customers.find(x => x.id === id) || state.editingCustomer) };
     const isAdmin = state.currentUser.role === 'admin';
+    const isOwner = state.editingCustomer.agent === state.currentUser.name;
     const agents = state.users.filter(u => u.status === 'active');
 
     // Set modal footer with delete and save buttons
     const modalFooter = document.getElementById('modal-footer');
     modalFooter.innerHTML = `<button class="btn btn-secondary" onclick="document.getElementById('modal-overlay').style.display='none'">${t('btn_cancel')}</button>
-        ${isAdmin ? `<button class="btn btn-danger" onclick="deleteCustomer(${id})">Sil</button>` : ''}
+        ${(isAdmin || isOwner) ? `<button class="btn btn-danger" onclick="deleteCustomer(${id})">Sil</button>` : ''}
         <button class="btn btn-primary" id="save-modal">${t('btn_save')}</button>`;
 
     const cat = state.editingCustomer.category || 'sale';
@@ -891,14 +941,24 @@ const showConfirm = (msg, onConfirm) => {
 };
 
 window.deleteProperty = (id) => { 
-    showConfirm('Bu ilanı silmek istediğinizden emin misiniz?', () => {
+    const item = state.items.find(x => x.id === id);
+    if (!item) return;
+    if (state.currentUser.role !== 'admin' && item.agent !== state.currentUser.name) {
+        showToast(t('msg_no_auth'), 'error'); return;
+    }
+    showConfirm(state.language === 'tr' ? 'Bu ilanı silmek istediğinizden emin misiniz?' : 'Are you sure you want to delete this listing?', () => {
         state.items = state.items.filter(x => x.id !== id); saveProperties(); 
         document.getElementById('modal-overlay').style.display='none'; renderBoard(state.activeTab); 
     });
 };
 
 window.deleteCustomer = (id) => { 
-    showConfirm('Bu müşteriyi silmek istediğinizden emin misiniz?', () => {
+    const cust = state.customers.find(x => x.id === id);
+    if (!cust) return;
+    if (state.currentUser.role !== 'admin' && cust.agent !== state.currentUser.name) {
+        showToast(t('msg_no_auth'), 'error'); return;
+    }
+    showConfirm(state.language === 'tr' ? 'Bu müşteriyi silmek istediğinizden emin misiniz?' : 'Are you sure you want to delete this client?', () => {
         state.customers = state.customers.filter(x => x.id !== id); saveCustomers(); 
         document.getElementById('modal-overlay').style.display='none'; 
         if(state.activeTab==='customers') renderCustomers(); else renderBoard(state.activeTab); 
@@ -924,20 +984,77 @@ function updateAdminNav() {
     initIcons();
 }
 
+window.openConsultantAdd = () => {
+    state.editingConsultant = null;
+    document.getElementById('consultant-modal-title').innerText = t('btn_add_con');
+    document.getElementById('con-name').value = '';
+    document.getElementById('con-company').value = '';
+    document.getElementById('con-phone').value = '';
+    document.getElementById('con-username').value = '';
+    document.getElementById('con-password').value = '';
+    document.getElementById('con-status').value = 'active';
+    document.getElementById('consultant-modal-overlay').style.display = 'flex';
+};
+
 // Consultant Edit
 window.openConsultantEdit = (id) => {
     state.editingConsultant = state.users.find(x => x.id === id);
     document.getElementById('consultant-modal-title').innerText = t('nav_consultant_mgmt');
     document.getElementById('con-name').value = state.editingConsultant.name;
+    document.getElementById('con-company').value = (state.editingConsultant.company || '');
+    document.getElementById('con-phone').value = (state.editingConsultant.phone || '');
     document.getElementById('con-username').value = state.editingConsultant.username;
     document.getElementById('con-password').value = state.editingConsultant.password;
+    document.getElementById('con-status').value = state.editingConsultant.status;
     document.getElementById('consultant-modal-overlay').style.display = 'flex';
 };
 document.getElementById('save-consultant-btn').onclick = () => {
-    const name = document.getElementById('con-name').value;
-    if(state.editingConsultant) { let u = state.users.find(x => x.id === state.editingConsultant.id); u.name = name; u.password = document.getElementById('con-password').value; }
-    else state.users.push({ id: Date.now(), name, username: document.getElementById('con-username').value, password: document.getElementById('con-password').value, status: 'active', role: 'consultant' });
-    saveUsers(); document.getElementById('consultant-modal-overlay').style.display = 'none'; renderConsultants(); updateAdminNav();
+    const name = document.getElementById('con-name').value.trim();
+    const company = document.getElementById('con-company').value.trim();
+    const phone = document.getElementById('con-phone').value.trim();
+    const username = document.getElementById('con-username').value.trim();
+    const password = document.getElementById('con-password').value.trim();
+    const status = document.getElementById('con-status').value;
+    
+    if (!name || !username || !password) {
+        alert(t('msg_required_fields'));
+        return;
+    }
+
+    if (state.editingConsultant) {
+        let u = state.users.find(x => x.id === state.editingConsultant.id);
+        u.name = name;
+        u.company = company;
+        u.phone = phone;
+        u.username = username;
+        u.password = password;
+        u.status = status;
+    } else {
+        // Check if username already exists
+        if (state.users.some(u => u.username === username)) {
+            showToast(t('msg_username_exists'), 'error');
+            return;
+        }
+        state.users.push({ 
+            id: Date.now(), 
+            name, 
+            company,
+            phone,
+            username, 
+            password, 
+            status, 
+            role: 'consultant' 
+        });
+    }
+    saveUsers(); 
+    document.getElementById('consultant-modal-overlay').style.display = 'none'; 
+    renderConsultants(); 
+    updateAdminNav();
+    showToast(state.language === 'tr' ? 'Danışman başarıyla kaydedildi.' : 'Agent successfully saved.');
+};
+
+document.getElementById('con-show-password').onchange = (e) => {
+    document.getElementById('con-password').type = e.target.checked ? 'text' : 'password';
 };
 window.deleteConsultant = (id) => { 
     showConfirm('Bu danışmanı silmek istediğinizden emin misiniz?', () => {

@@ -156,6 +156,10 @@
                 <div class="form-group"><label class="form-label" data-i18n="old_psw">Eski Şifre</label><input type="password" id="old-password" class="form-input"></div>
                 <div class="form-group"><label class="form-label" data-i18n="new_psw">Yeni Şifre</label><input type="password" id="new-password" class="form-input"></div>
                 <div class="form-group"><label class="form-label" data-i18n="new_psw_repeat">Yeni Şifre (Yeniden)</label><input type="password" id="new-password-repeat" class="form-input"></div>
+                <div style="display: flex; align-items: center; gap: 0.4rem; margin-top: 0.5rem;">
+                    <input type="checkbox" id="user-show-password" style="width: 14px; height: 14px; cursor: pointer;">
+                    <label for="user-show-password" style="font-size: 0.75rem; color: var(--text-secondary); cursor: pointer;" data-i18n="show_psw">Şifreyi Göster</label>
+                </div>
             </div>
             <footer class="modal-footer">
                 <button class="btn btn-secondary" id="cancel-user-modal" data-i18n="btn_cancel">İptal</button>
@@ -172,6 +176,10 @@
             </header>
             <div class="modal-body" id="consultant-modal-body">
                 <div class="form-group"><label class="form-label" data-i18n="th_cust_name">Ad Soyad</label><input type="text" id="con-name" class="form-input"></div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                    <div class="form-group"><label class="form-label">Şirket Adı</label><input type="text" id="con-company" class="form-input"></div>
+                    <div class="form-group"><label class="form-label" data-i18n="th_phone">Telefon</label><input type="text" id="con-phone" class="form-input"></div>
+                </div>
                 <div class="form-group"><label class="form-label" data-i18n="login_user">Kullanıcı Adı</label><input type="text" id="con-username" class="form-input"></div>
                 <div class="form-group">
                     <label class="form-label" data-i18n="login_pass">Şifre</label>
