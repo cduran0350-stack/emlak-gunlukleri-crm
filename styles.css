@@ -962,14 +962,20 @@ textarea.form-input { resize: vertical; }
         width: 100%;
     }
 
-    .search-box { width: 100%; }
+    .search-box { 
+        grid-column: span 2; /* Full width for search on mobile */
+        width: 100%; 
+    }
     .search-box input { width: 100% !important; padding: 0.75rem 1rem 0.75rem 2.5rem !important; }
 
     .btn { 
         width: 100%; 
         justify-content: center; 
-        padding: 0.7rem 1rem;
-        font-size: 0.9rem;
+        padding: 0.7rem 0.5rem;
+        font-size: 0.8rem; /* Slightly smaller for 2-col buttons */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     /* Content */
