@@ -991,15 +991,18 @@ textarea.form-input { resize: vertical; }
 
     /* Mobile Row Cells */
     .record-cell {
-        display: block !important;
-        font-size: 0.8rem !important;
-        padding: 0.4rem 0.75rem !important;
+        display: flex !important;
+        align-items: center;
+        font-size: 0.78rem !important;
+        padding: 0.5rem 0.75rem !important;
         white-space: nowrap !important;
         overflow: hidden;
         text-overflow: ellipsis;
+        border-right: 1px solid rgba(0,0,0,0.03);
     }
+    .record-cell:last-child { border-right: none; }
     .record-cell::before { display: none !important; }
-    .record-cell[data-label]:first-child { margin-bottom: 0 !important; }
+    .record-cell[data-label]:first-child { margin-bottom: 0 !important; padding-left: 1rem !important; }
 
     /* Login mobile */
     .login-card {
