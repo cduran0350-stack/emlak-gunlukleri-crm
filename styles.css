@@ -953,91 +953,53 @@ textarea.form-input { resize: vertical; }
     .content-scrollable { padding: 1rem; }
     .board-view { gap: 2rem; }
 
-    /* --- Mobile Card View for record rows --- */
+    /* --- Mobile Horizontal Table Scroll --- */
     .record-grid {
-        overflow-x: visible;
-        background: transparent;
-        border: none;
-    }
-
-    .record-header { display: none; } /* Hide table header on mobile */
-
-    .record-rows-container {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-
-    /* Card style for each row */
-    .record-row {
-        display: flex !important;
-        flex-direction: column !important;
-        grid-template-columns: unset !important;
-        min-width: unset !important;
-        padding: 1.25rem;
-        gap: 0.6rem;
-        border-radius: var(--radius-lg);
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        background: var(--white);
         border: 1px solid var(--border);
-        box-shadow: var(--shadow-sm);
-        background: var(--card-bg);
-        backdrop-filter: blur(12px);
-        position: relative;
+        border-radius: var(--radius-md);
+        margin-bottom: 3rem;
+    }
+    .record-header { 
+        display: grid !important; 
+        min-width: max-content; 
+    }
+    .record-rows-container {
+        display: block;
+        min-width: max-content;
+    }
+
+    .record-row {
+        display: grid !important; 
+        grid-template-columns: inherit !important;
+        min-width: max-content !important;
+        padding: 0.75rem 0.5rem !important;
+        gap: 0 !important;
+        border: none !important;
+        border-bottom: 1px solid var(--border-light) !important;
+        box-shadow: none !important;
         transform: none !important;
+        background: transparent !important;
+        backdrop-filter: none !important;
         cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    .record-row::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        width: 4px;
-        background: var(--primary);
-        border-radius: var(--radius-lg) 0 0 var(--radius-lg);
-    }
+    .record-row::before { display: none !important; }
+    .record-row:hover { transform: none !important; }
 
-    .record-row:hover {
-        border-color: rgba(15, 23, 42, 0.2);
-        box-shadow: var(--shadow-md);
-        transform: translateY(-2px) !important;
-    }
-
-    /* Show data-label on mobile */
+    /* Mobile Row Cells */
     .record-cell {
-        display: flex;
-        align-items: flex-start;
-        gap: 0.5rem;
-        font-size: 0.875rem;
-        white-space: normal;
-        overflow: visible;
-        text-overflow: unset;
+        display: block !important;
+        font-size: 0.8rem !important;
+        padding: 0.4rem 0.75rem !important;
+        white-space: nowrap !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
-
-    .record-cell::before {
-        content: attr(data-label);
-        font-weight: 600;
-        font-size: 0.7rem;
-        text-transform: uppercase;
-        color: var(--text-secondary);
-        min-width: 90px;
-        flex-shrink: 0;
-        padding-top: 0.15rem;
-    }
-
-    /* Hide cells that have no data-label (truly non-critical) */
-    .record-cell:not([data-label]) {
-        display: none;
-    }
-
-    /* Status pill row — no label prefix needed */
-    .record-cell[data-label]:first-child::before {
-        display: none;
-    }
-    .record-cell[data-label]:first-child {
-        margin-bottom: 0.25rem;
-    }
+    .record-cell::before { display: none !important; }
+    .record-cell[data-label]:first-child { margin-bottom: 0 !important; }
 
     /* Login mobile */
     .login-card {
