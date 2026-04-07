@@ -199,6 +199,12 @@ body {
     flex-shrink: 0;
 }
 
+#property-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
 .search-box {
     position: relative;
     display: flex;
