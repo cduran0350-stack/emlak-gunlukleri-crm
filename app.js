@@ -420,7 +420,7 @@ function renderBoard(category) {
         { key: 'group_rented',        type: 'mixed',       data: sortData([...items.filter(i => i.status === 'Kiralandı'), ...customers.filter(c => c.status === 'Tamamlandı' && (c.seller_status === 'Satıldı' || c.seller_status === 'Kiralandı'))]) }
     ];
 
-    const statusMap = { 'Yeni': 'new', 'Sıcak': 'hot', 'Pazarlıkta': 'neg', 'Satıldı': 'sold', 'Kiralandı': 'sold', 'Görüşüldü': 'contacted', 'Randevu Alındı': 'appointment', 'Tamamlandı': 'done' };
+    const statusMap = { 'Yeni': 'new', 'Sıcak': 'hot', 'Pazarlıkta': 'neg', 'Satıldı': 'sold', 'Kiralandı': 'sold', 'Görüşüldü': 'contacted', 'Arandı': 'contacted', 'Randevu Alındı': 'appointment', 'Tamamlandı': 'done' };
 
     // hb(sKey, key, label, options?) — header builder, section-isolated
     const hb = (sKey, key, label, options = null) => {
@@ -628,9 +628,9 @@ function renderCustomers() {
         custs = custs.filter(c => c.name.toLowerCase().includes(term) || (c.email || '').toLowerCase().includes(term));
     }
 
-    const statuses = ['Yeni', 'Görüşüldü', 'Randevu Alındı', 'Tamamlandı'];
-    const statusKeys = { 'Yeni': 'status_new', 'Görüşüldü': 'status_contacted', 'Randevu Alındı': 'status_appointment', 'Tamamlandı': 'status_done' };
-    const statusMap = { 'Yeni': 'new', 'Görüşüldü': 'contacted', 'Randevu Alındı': 'appointment', 'Tamamlandı': 'done' };
+    const statuses = ['Yeni', 'Arandı', 'Randevu Alındı', 'Tamamlandı'];
+    const statusKeys = { 'Yeni': 'status_new', 'Arandı': 'status_contacted', 'Randevu Alındı': 'status_appointment', 'Tamamlandı': 'status_done' };
+    const statusMap = { 'Yeni': 'new', 'Arandı': 'contacted', 'Görüşüldü': 'contacted', 'Randevu Alındı': 'appointment', 'Tamamlandı': 'done' };
 
     const boardView = document.getElementById('board-view');
     boardView.innerHTML = '';
@@ -794,6 +794,13 @@ document.getElementById('show-password').onchange = (e) => {
     document.getElementById('login-password').type = e.target.checked ? 'text' : 'password';
 };
 
+// Login with Enter key
+['login-username', 'login-password'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') document.getElementById('login-submit').click();
+    });
+});
+
 document.getElementById('logout-btn').onclick = logout;
 document.getElementById('lang-tr').onclick = () => setLanguage('tr');
 document.getElementById('lang-en').onclick = () => setLanguage('en');
@@ -828,18 +835,21 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
     });
 });
 
-// Prop Logic
-document.getElementById('add-item-btn').onclick = () => {
-    if (state.activeTab === 'sale' || state.activeTab === 'rent') {
-        state.editingItem = { id: Date.now(), prop_type: 'Daire', name: '', address: '', rooms: '3+1', m2: '', age: '', usage: 'Boş', price: '', status: 'Yeni', agent: state.currentUser.name, category: state.activeTab };
-        openPropertyDetail(state.editingItem.id);
-    } else if (state.activeTab === 'customers') {
-        state.editingCustomer = { id: Date.now(), name: '', phone: '', email: '', interest: '', status: 'Yeni', agent: state.currentUser.name, category: 'sale' };
-        openCustomerDetail(state.editingCustomer.id);
-    } else if (state.activeTab === 'consultants') {
-        openConsultantAdd();
-    }
-};
+// Prop Logic — guarded: this button doesn't exist in HTML but kept for safety
+const _addItemBtn = document.getElementById('add-item-btn');
+if (_addItemBtn) {
+    _addItemBtn.onclick = () => {
+        if (state.activeTab === 'sale' || state.activeTab === 'rent') {
+            state.editingItem = { id: Date.now(), prop_type: 'Daire', name: '', address: '', rooms: '3+1', m2: '', age: '', usage: 'Boş', price: '', status: 'Yeni', agent: state.currentUser.name, category: state.activeTab };
+            openPropertyDetail(state.editingItem.id);
+        } else if (state.activeTab === 'customers') {
+            state.editingCustomer = { id: Date.now(), name: '', phone: '', email: '', interest: '', status: 'Yeni', agent: state.currentUser.name, category: 'sale' };
+            openCustomerDetail(state.editingCustomer.id);
+        } else if (state.activeTab === 'consultants') {
+            openConsultantAdd();
+        }
+    };
+}
 
 window.openPropertyDetail = (id) => {
     state.modalType = 'property';
@@ -910,17 +920,16 @@ window.openPropertyDetail = (id) => {
                     ${['Boş','Kiracı','Mülk Sahibi'].map(o => `<option value="${o}" ${state.editingItem.usage === o ? 'selected' : ''}>${o}</option>`).join('')}
                 </select>
             </div>
-        <div class="form-grid-2">
             <div class="form-group"><label class="form-label">${t('th_price')}</label><input type="text" id="p-price" class="form-input" value="${state.editingItem.price}"></div>
-            <div class="form-group">
-                <label class="form-label">${t('th_authority')}</label>
-                <div class="authority-toggle">
-                    <div id="p-auth-yes" class="auth-btn green ${state.editingItem.authority === 'yes' ? 'active' : ''}" onclick="state.editingItem.authority = 'yes'; document.getElementById('p-auth-yes').classList.add('active'); document.getElementById('p-auth-no').classList.remove('active');">
-                        <i data-lucide="check"></i>
-                    </div>
-                    <div id="p-auth-no" class="auth-btn red ${state.editingItem.authority === 'no' ? 'active' : ''}" onclick="state.editingItem.authority = 'no'; document.getElementById('p-auth-no').classList.add('active'); document.getElementById('p-auth-yes').classList.remove('active');">
-                        <i data-lucide="check"></i>
-                    </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">${t('th_authority')}</label>
+            <div class="authority-toggle">
+                <div id="p-auth-yes" class="auth-btn green ${state.editingItem.authority === 'yes' ? 'active' : ''}" onclick="state.editingItem.authority = 'yes'; document.getElementById('p-auth-yes').classList.add('active'); document.getElementById('p-auth-no').classList.remove('active');">
+                    <i data-lucide="check"></i>
+                </div>
+                <div id="p-auth-no" class="auth-btn red ${state.editingItem.authority === 'no' ? 'active' : ''}" onclick="state.editingItem.authority = 'no'; document.getElementById('p-auth-no').classList.add('active'); document.getElementById('p-auth-yes').classList.remove('active');">
+                    <i data-lucide="check"></i>
                 </div>
             </div>
         </div>

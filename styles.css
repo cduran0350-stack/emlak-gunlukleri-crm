@@ -1,5 +1,6 @@
 :root {
     --primary: #0f172a;
+    --primary-rgb: 15, 23, 42;
     --primary-light: #f1f5f9;
     --background: #f8fafc;
     --sidebar-bg: rgba(255, 255, 255, 0.7);
@@ -751,7 +752,7 @@ textarea.form-input { resize: vertical; }
     justify-content: center;
     z-index: 2000;
     padding: 1rem;
-    overflow: hidden;
+    overflow-y: auto;
 }
 .login-overlay::before, .login-overlay::after {
     content: '';
@@ -928,12 +929,11 @@ textarea.form-input { resize: vertical; }
         padding-top: calc(52px + 0.75rem);
         height: auto;
         flex-direction: column;
-        align-items: center; /* Center for mobile */
+        align-items: flex-start;
         gap: 0.5rem;
         background: var(--white);
         border-bottom: 1px solid var(--border);
         width: 100%;
-        text-align: center;
     }
 
     .header-left { 
@@ -978,52 +978,9 @@ textarea.form-input { resize: vertical; }
         white-space: nowrap;
     }
 
-    /* Content */
+    /* Content sits naturally below .main-header which already accounts for the 52px bar */
     .content-scrollable { padding: 1rem; }
     .board-view { gap: 2rem; }
-
-    @media (max-width: 600px) {
-        .record-header { display: none !important; }
-        .record-rows-container { display: flex; flex-direction: column; gap: 0.75rem; width: 100%; min-width: 100%; }
-        .record-grid { overflow-x: visible; background: transparent; border: none; }
-        .record-row {
-            display: flex !important;
-            flex-direction: column !important;
-            min-width: 100% !important;
-            width: 100% !important;
-            background: var(--white) !important;
-            border: 1px solid var(--border) !important;
-            border-left: 4px solid var(--primary) !important;
-            border-radius: 12px !important;
-            padding: 1.25rem !important;
-            gap: 0.5rem !important;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05) !important;
-            position: relative;
-        }
-        .record-cell {
-            display: flex !important;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.4rem 0 !important;
-            font-size: 0.85rem !important;
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-            white-space: normal !important;
-            border-right: none !important;
-            width: 100%;
-        }
-        .record-cell:last-child { border-bottom: none; }
-        .record-cell::before {
-            content: attr(data-label);
-            display: block !important;
-            font-weight: 700;
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            color: var(--text-secondary);
-            flex: 0 0 100px;
-        }
-        .record-cell[data-label]:first-child { padding-left: 0 !important; }
-        .record-cell[data-label]:first-child::before { display: none !important; }
-    }
 
     /* Login mobile */
     .login-card {
@@ -1114,6 +1071,58 @@ textarea.form-input { resize: vertical; }
         flex-direction: column !important;
         gap: 0 !important;
     }
+}
+
+/* ============================================
+   RESPONSIVE — SMALL SCREENS (max-width: 600px)
+   Card-style rows instead of horizontal table
+   ============================================ */
+@media (max-width: 600px) {
+    .record-header { display: none !important; }
+    .record-rows-container { display: flex; flex-direction: column; gap: 0.75rem; width: 100%; min-width: 100%; }
+    .record-grid { overflow-x: visible; background: transparent; border: none; }
+    .record-row {
+        display: flex !important;
+        flex-direction: column !important;
+        min-width: 100% !important;
+        width: 100% !important;
+        background: var(--white) !important;
+        border: 1px solid var(--border) !important;
+        border-left: 4px solid var(--primary) !important;
+        border-radius: 12px !important;
+        padding: 1.25rem !important;
+        gap: 0.5rem !important;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05) !important;
+        position: relative;
+    }
+    .record-cell {
+        display: flex !important;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.4rem 0 !important;
+        font-size: 0.85rem !important;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        white-space: normal !important;
+        border-right: none !important;
+        width: 100%;
+    }
+    .record-cell:last-child { border-bottom: none; }
+    .record-cell::before {
+        content: attr(data-label);
+        display: block !important;
+        font-weight: 700;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        flex: 0 0 100px;
+        min-width: 90px;
+    }
+    .record-cell[data-label]:first-child { padding-left: 0 !important; }
+    .record-cell[data-label]:first-child::before { display: none !important; }
+    /* Login card tam ekran üzerinde scroll yapabilsin */
+    .login-card { max-height: calc(100vh - 2rem); overflow-y: auto; }
+    /* Modal sayfayı geçmesin */
+    .modal-content { max-height: 95vh; }
 }
 
 /* ============================================
