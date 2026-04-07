@@ -323,13 +323,11 @@ function switchTab(tab) {
 
     if (tab === 'sale' || tab === 'rent') {
         const isSale = tab === 'sale';
-        document.getElementById(isSale ? 'nav-sale' : 'nav-rent').classList.add('active');
+        if (document.getElementById(isSale ? 'nav-sale' : 'nav-rent')) document.getElementById(isSale ? 'nav-sale' : 'nav-rent').classList.add('active');
         document.getElementById('board-title').innerText = isSale ? t('board_title_sale') : t('board_title_rent');
         
-        // Dynamic Buttons
         const label1 = isSale ? 'Randevu Kaydı' : 'Kiracı Ekle';
         const label2 = isSale ? 'Satılık Portföy Ekle' : 'Kiralık Portföy Ekle';
-        
         const btn1 = `<button class="btn btn-secondary btn-add-dynamic" id="add-cust-dynamic"><i data-lucide="user-plus"></i> ${label1}</button>`;
         const btn2 = `<button class="btn btn-primary btn-add-dynamic" id="add-prop-dynamic"><i data-lucide="plus"></i> ${label2}</button>`;
         
@@ -343,19 +341,22 @@ function switchTab(tab) {
             state.editingItem = { id: Date.now(), prop_type: 'Daire', name: '', address: '', rooms: '3+1', m2: '', age: '', usage: 'Boş', price: '', status: 'Yeni', agent: state.currentUser.name, category: tab };
             openPropertyDetail(state.editingItem.id);
         };
-        
-        document.getElementById('add-item-btn').style.display = 'none';
         renderBoard(tab);
     } else if (tab === 'customers') {
-        document.getElementById('nav-customers').classList.add('active');
+        if (document.getElementById('nav-customers')) document.getElementById('nav-customers').classList.add('active');
         document.getElementById('board-title').innerText = t('board_title_cust');
-        document.getElementById('add-item-btn').style.display = 'flex';
-        document.getElementById('add-item-btn').innerHTML = `<i data-lucide="user-plus"></i> ${t('btn_add_cust')}`;
+        const btn = `<button class="btn btn-primary btn-add-dynamic" id="add-cust-only"><i data-lucide="user-plus"></i> ${t('btn_add_cust')}</button>`;
+        actionContainer.insertAdjacentHTML('beforeend', btn);
+        document.getElementById('add-cust-only').onclick = () => {
+            state.editingCustomer = { id: Date.now(), name: '', phone: '', email: '', interest: '', status: 'Yeni', agent: state.currentUser.name, category: 'sale' };
+            openCustomerDetail(state.editingCustomer.id);
+        };
         renderCustomers();
     } else if (tab === 'consultants') {
         document.getElementById('board-title').innerText = t('board_title_con');
-        document.getElementById('add-item-btn').style.display = 'flex';
-        document.getElementById('add-item-btn').innerHTML = `<i data-lucide="user-plus"></i> ${t('btn_add_con')}`;
+        const btn = `<button class="btn btn-primary btn-add-dynamic" id="add-cons-only"><i data-lucide="user-plus"></i> ${t('btn_add_con')}</button>`;
+        actionContainer.insertAdjacentHTML('beforeend', btn);
+        document.getElementById('add-cons-only').onclick = openConsultantAdd;
         renderConsultants();
     }
     initIcons();
@@ -1047,8 +1048,8 @@ function doSaveModal() {
             usage: document.getElementById('p-usage').value,
             price: document.getElementById('p-price').value.trim(),
             authority: state.editingItem.authority || '',
-            buyer_name: document.getElementById('p-buyer-name') ? document.getElementById('p-buyer-name').value.trim() : '',
-            buyer_phone: document.getElementById('p-buyer-phone') ? document.getElementById('p-buyer-phone').value.trim() : '',
+            buyer_name: document.getElementById('p-buyer-name') ? document.getElementById('p-buyer-name').value.trim() : (state.editingItem.buyer_name || ''),
+            buyer_phone: document.getElementById('p-buyer-phone') ? document.getElementById('p-buyer-phone').value.trim() : (state.editingItem.buyer_phone || ''),
             agent: isAdmin ? document.getElementById('p-agent').value : state.editingItem.agent 
         };
         const idx = state.items.findIndex(i => i.id === updated.id);
@@ -1077,8 +1078,8 @@ function doSaveModal() {
             meeting_date: document.getElementById('c-meeting-date').value, 
             appointment_datetime, 
             notes: document.getElementById('c-notes').value, 
-            buyer_name: document.getElementById('c-buyer-name') ? document.getElementById('c-buyer-name').value.trim() : '',
-            buyer_phone: document.getElementById('c-buyer-phone') ? document.getElementById('c-buyer-phone').value.trim() : '',
+            buyer_name: document.getElementById('c-buyer-name') ? document.getElementById('c-buyer-name').value.trim() : (state.editingCustomer.buyer_name || ''),
+            buyer_phone: document.getElementById('c-buyer-phone') ? document.getElementById('c-buyer-phone').value.trim() : (state.editingCustomer.buyer_phone || ''),
             agent: state.currentUser.role==='admin' ? document.getElementById('c-agent').value : state.editingCustomer.agent 
         };
         const idx = state.customers.findIndex(i => i.id === updated.id);
