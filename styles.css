@@ -22,6 +22,8 @@
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
     --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
     --font-heading: 'Outfit', sans-serif;
+    --authority-green: #22c55e;
+    --authority-red: #ef4444;
 }
 
 /* ============================================
@@ -357,9 +359,9 @@ body {
 .record-header-cell:hover { color: var(--primary); }
 
 /* Grid column templates */
-.grid-prop  { grid-template-columns: 90px 0.8fr 1.1fr 1.3fr 0.6fr 0.5fr 0.5fr 0.7fr 1fr 0.8fr; min-width: 1100px; }
-.grid-mixed { grid-template-columns: 90px 0.7fr 1fr 0.8fr 0.7fr 1.2fr 0.5fr 0.5fr 0.9fr 0.5fr 0.6fr 0.8fr 0.7fr; min-width: 1400px; }
-.grid-cust  { grid-template-columns: 90px 1.2fr 0.9fr 0.8fr 1.1fr 0.8fr 1fr 1.3fr 0.8fr; min-width: 900px; }
+.grid-prop  { grid-template-columns: 80px 0.6fr 0.9fr 0.9fr 0.8fr 0.8fr 0.4fr 0.4fr 0.4fr 0.5fr 0.8fr 50px 0.6fr; min-width: 1300px; }
+.grid-mixed { grid-template-columns: 80px 0.7fr 0.9fr 0.8fr 0.7fr 1.1fr 0.4fr 0.4fr 0.8fr 0.4fr 0.5fr 0.8fr 50px 0.6fr; min-width: 1400px; }
+.grid-cust  { grid-template-columns: 80px 1.1fr 0.9fr 0.8fr 1fr 0.8fr 1fr 1.2fr 0.7fr; min-width: 900px; }
 
 .record-rows-container { width: 100%; }
 
@@ -678,7 +680,64 @@ body {
 
 .form-group:focus-within .form-label { color: var(--primary); }
 
+.phone-link {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+.phone-link:hover {
+    color: var(--accent-blue);
+    text-decoration: underline;
+}
+
 textarea.form-input { resize: vertical; }
+
+/* Authority Toggle */
+.authority-toggle {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.auth-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--white);
+    transition: all 0.2s;
+    color: var(--text-secondary);
+    opacity: 0.4;
+}
+
+.auth-btn:hover { opacity: 0.7; }
+
+.auth-btn.active.green {
+    background: #f0fdf4;
+    border-color: var(--authority-green);
+    color: var(--authority-green);
+    opacity: 1;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+}
+
+.auth-btn.active.red {
+    background: #fef2f2;
+    border-color: var(--authority-red);
+    color: var(--authority-red);
+    opacity: 1;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.record-cell.authority-cell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
 /* ============================================
    LOGIN
@@ -1078,4 +1137,35 @@ textarea.form-input { resize: vertical; }
     .login-card { padding: 1.5rem 1rem; }
     .header-left h1 { font-size: 1rem; }
     .status-pill { font-size: 0.62rem; padding: 0.25rem 0.5rem; }
+    
+    /* Touch optimization for mobile */
+    .auth-btn {
+        width: 44px;
+        height: 44px;
+    }
+    
+    .record-cell {
+        gap: 0.75rem;
+    }
+    
+    .record-cell::before {
+        min-width: 80px;
+    }
+}
+
+/* Extra mobile fixes */
+@media (max-width: 768px) {
+    .record-cell {
+        word-break: break-word;
+    }
+    
+    .authority-toggle {
+        padding: 4px 0;
+    }
+    
+    /* Make sure the main content doesn't get hidden behind the sticky header if it's tall */
+    #app {
+        height: 100vh;
+        overflow: hidden;
+    }
 }

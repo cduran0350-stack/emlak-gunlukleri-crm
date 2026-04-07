@@ -94,7 +94,7 @@ const translations = {
         group_rent_portfolio: 'Kiralık Portföy',
         group_rented: 'Kiralandı',
         th_title: 'Başlık', th_type: 'Tip', th_loc: 'Konum', th_price: 'Fiyat', th_agent: 'Danışman', th_cust_name: 'Ad Soyad', th_phone: 'Telefon', th_email: 'E-posta', th_interest: 'İlgi Alanı', th_status: 'Durum', th_actions: 'İşlemler',
-        th_meeting_date: 'Görüşme Tarihi', th_appointment: 'Randevu', th_region: 'Bölge', th_notes: 'Notlar',
+        th_meeting_date: 'Görüşme Tarihi', th_appointment: 'Randevu', th_region: 'Bölge', th_notes: 'Notlar', th_authority: 'Yetki',
         th_category: 'Kategori', opt_sale: 'Satılık', opt_rent: 'Kiralık',
         login_user: 'Kullanıcı Adı', login_pass: 'Şifre', show_psw: 'Şifreyi Göster', stay_logged_in: 'Sürekli Açık Tut', login_btn: 'Giriş Yap',
         btn_cancel: 'İptal', btn_save: 'Kaydet', btn_update: 'Güncelle',
@@ -111,7 +111,9 @@ const translations = {
         lbl_rooms: 'Oda Sayısı',
         lbl_usage: 'Kullanım Durumu',
         lbl_age: 'Bina Yaşı',
-        lbl_address_loc: 'Adres / Konum'
+        lbl_address_loc: 'Adres / Konum',
+        th_buyer: 'Alan Kişi',
+        th_buyer_phone: 'Alan Tel'
     },
     en: {
         nav_sale: 'For Sale',
@@ -137,7 +139,7 @@ const translations = {
         group_rent_portfolio: 'Rent Portfolio',
         group_rented: 'Rented Items',
         th_title: 'Title', th_type: 'Type', th_loc: 'Area', th_price: 'Price', th_agent: 'Agent', th_cust_name: 'Full Name', th_phone: 'Phone', th_email: 'Email', th_interest: 'Interest', th_status: 'Status', th_actions: 'Actions',
-        th_meeting_date: 'Meeting Date', th_appointment: 'Appt', th_region: 'Region', th_notes: 'Notes',
+        th_meeting_date: 'Meeting Date', th_appointment: 'Appt', th_region: 'Region', th_notes: 'Notes', th_authority: 'Auth',
         th_category: 'Category', opt_sale: 'Sale', opt_rent: 'Rent',
         login_user: 'Username', login_pass: 'Password', show_psw: 'Show Pass', stay_logged_in: 'Keep me logged in', login_btn: 'Sign In',
         btn_cancel: 'Cancel', btn_save: 'Save Changes', btn_update: 'Update Now',
@@ -154,7 +156,9 @@ const translations = {
         lbl_rooms: 'Rooms',
         lbl_usage: 'Usage Status',
         lbl_age: 'Building Age',
-        lbl_address_loc: 'Address / Location'
+        lbl_address_loc: 'Address / Location',
+        th_buyer: 'Buyer Name',
+        th_buyer_phone: 'Buyer Phone'
     }
 };
 
@@ -483,7 +487,7 @@ function renderBoard(category) {
                 <div class="record-row grid-cust" onclick="openCustomerDetail(${c.id})">
                     <div class="record-cell" data-label="${t('th_status')}"><span class="status-pill status-${statusMap[c.status] || 'new'}">${c.status}</span></div>
                     <div class="record-cell" data-label="${t('th_cust_name')}" style="font-weight:600">${c.name}</div>
-                    <div class="record-cell" data-label="${t('th_phone')}">${c.phone}</div>
+                    <div class="record-cell" data-label="${t('th_phone')}">${c.phone ? `<a href="tel:${c.phone}" class="phone-link" onclick="event.stopPropagation()">${c.phone}</a>` : '-'}</div>
                     <div class="record-cell" data-label="${t('th_region')}">${c.region || '-'}</div>
                     <div class="record-cell" data-label="${t('th_interest')}">${c.interest}</div>
                     <div class="record-cell" data-label="${t('th_meeting_date')}">${c.meeting_date || '-'}</div>
@@ -502,11 +506,14 @@ function renderBoard(category) {
                     ${hb(sk,'prop_type', 'Mülk', PROP_TYPES)}
                     ${hb(sk,'name', 'Sahibi')}
                     ${hb(sk,'address', 'Adres')}
+                    ${hb(sk,'buyer_name', t('th_buyer'))}
+                    ${hb(sk,'buyer_phone', t('th_buyer_phone'))}
                     ${hb(sk,'rooms', 'Oda', ROOMS)}
                     ${hb(sk,'m2', 'm2')}
                     ${hb(sk,'age', 'Yaş')}
                     ${hb(sk,'usage', 'Kullanım', USAGES)}
                     ${hb(sk,'price', t('th_price'))}
+                    ${hb(sk,'authority', t('th_authority'))}
                     ${hb(sk,'agent', t('th_agent'))}
                 </div>`;
             rowsHtml = visibleData.map(item => `
@@ -515,11 +522,14 @@ function renderBoard(category) {
                     <div class="record-cell" data-label="${t('lbl_prop_type')}">${item.prop_type || '-'}</div>
                     <div class="record-cell" data-label="${t('lbl_owner')}" style="font-weight:600">${item.name || '-'}</div>
                     <div class="record-cell" data-label="${t('lbl_address_loc')}">${item.address || '-'}</div>
+                    <div class="record-cell" data-label="${t('th_buyer')}">${item.buyer_name || '-'}</div>
+                    <div class="record-cell" data-label="${t('th_buyer_phone')}">${item.buyer_phone ? `<a href="tel:${item.buyer_phone}" class="phone-link" onclick="event.stopPropagation()">${item.buyer_phone}</a>` : '-'}</div>
                     <div class="record-cell" data-label="${t('lbl_rooms')}">${item.rooms || '-'}</div>
                     <div class="record-cell" data-label="m2">${item.m2 || '-'}</div>
                     <div class="record-cell" data-label="${t('lbl_age')}">${item.age || '-'}</div>
                     <div class="record-cell" data-label="${t('lbl_usage')}">${item.usage || '-'}</div>
                     <div class="record-cell" data-label="${t('th_price')}" style="color:var(--primary);font-weight:600">${item.price || '-'}</div>
+                    <div class="record-cell authority-cell" data-label="${t('th_authority')}">${item.authority === 'yes' ? '<i data-lucide="check" style="color:var(--authority-green); width:18px;"></i>' : item.authority === 'no' ? '<i data-lucide="check" style="color:var(--authority-red); width:18px;"></i>' : '-'}</div>
                     <div class="record-cell" data-label="${t('th_agent')}">${item.agent}</div>
                 </div>`).join('');
         } else if (section.type === 'mixed') {
@@ -538,6 +548,7 @@ function renderBoard(category) {
                     ${hb(sk,'age', 'Yaş')}
                     ${hb(sk,'usage', 'Kullanım', USAGES)}
                     ${hb(sk,'price', t('th_price'))}
+                    ${hb(sk,'authority', t('th_authority'))}
                     ${hb(sk,'agent', t('th_agent'))}
                 </div>`;
             rowsHtml = visibleData.map(obj => {
@@ -549,7 +560,7 @@ function renderBoard(category) {
                     <div class="record-cell" data-label="${t('th_status')}"><span class="status-pill status-${statusClass}">${obj.status}</span></div>
                     <div class="record-cell" data-label="${t('lbl_prop_type')}">${obj.prop_type || '-'}</div>
                     <div class="record-cell" data-label="${t('lbl_owner')}" style="font-weight:600">${obj.name || '-'}</div>
-                    <div class="record-cell" data-label="${t('th_phone')}">${obj.phone || '-'}</div>
+                    <div class="record-cell" data-label="${t('th_phone')}">${obj.phone ? `<a href="tel:${obj.phone}" class="phone-link" onclick="event.stopPropagation()">${obj.phone}</a>` : '-'}</div>
                     <div class="record-cell" data-label="${t('th_region')}">${obj.region || '-'}</div>
                     <div class="record-cell" data-label="Adres">${obj.address || '-'}</div>
                     <div class="record-cell" data-label="${t('lbl_rooms')}">${obj.rooms || '-'}</div>
@@ -558,13 +569,14 @@ function renderBoard(category) {
                     <div class="record-cell" data-label="${t('lbl_age')}">${obj.age || '-'}</div>
                     <div class="record-cell" data-label="${t('lbl_usage')}">${obj.usage || '-'}</div>
                     <div class="record-cell" data-label="${t('th_price')}" style="color:var(--primary);font-weight:600">${obj.price || '-'}</div>
+                    <div class="record-cell authority-cell" data-label="${t('th_authority')}">${obj.authority === 'yes' ? '<i data-lucide="check" style="color:var(--authority-green); width:18px;"></i>' : obj.authority === 'no' ? '<i data-lucide="check" style="color:var(--authority-red); width:18px;"></i>' : '-'}</div>
                     <div class="record-cell" data-label="${t('th_agent')}">${obj.agent}</div>
                 </div>` : `
                 <div class="record-row grid-mixed" onclick="openCustomerDetail(${obj.id})" style="background:rgba(22, 163, 74, 0.05); border-left: 4px solid var(--accent-green);">
                     <div class="record-cell" data-label="${t('th_status')}"><span class="status-pill status-${(obj.seller_status || 'Yeni').toLowerCase() === 'yeni' ? 'new' : (obj.seller_status || 'yeni').toLowerCase() === 'sıcak' ? 'hot' : (obj.seller_status || 'yeni').toLowerCase() === 'pazarlıkta' ? 'neg' : 'sold'}">${obj.seller_status || 'Yeni'}</span></div>
                     <div class="record-cell" data-label="Tip"><span style="background:var(--accent-green); color:white; padding:2px 6px; border-radius:4px; font-size:0.65rem; font-weight:700; display:inline-flex; align-items:center; gap:3px;"><i data-lucide="star" style="width:10px; height:10px;"></i> SATICI</span></div>
                     <div class="record-cell" data-label="${t('th_cust_name')}" style="font-weight:600">${obj.name}</div>
-                    <div class="record-cell" data-label="${t('th_phone')}">${obj.phone || '-'}</div>
+                    <div class="record-cell" data-label="${t('th_phone')}">${obj.phone ? `<a href="tel:${obj.phone}" class="phone-link" onclick="event.stopPropagation()">${obj.phone}</a>` : '-'}</div>
                     <div class="record-cell" data-label="${t('th_region')}">${obj.region || '-'}</div>
                     <div class="record-cell" data-label="${t('th_interest')}">${obj.interest || '-'}</div>
                     <div class="record-cell" data-label="Oda">-</div>
@@ -572,7 +584,8 @@ function renderBoard(category) {
                     <div class="record-cell" data-label="${t('th_notes')}" style="font-style:italic;font-size:0.8rem; color:var(--text-secondary)">${obj.notes || '-'}</div>
                     <div class="record-cell" data-label="${t('lbl_age')}">-</div>
                     <div class="record-cell" data-label="${t('lbl_usage')}">-</div>
-                    <div class="record-cell" data-label="${t('th_price')}">-</div>
+                    <div class="record-cell" data-label="${t('th_price')}">${obj.price || '-'}</div>
+                    <div class="record-cell authority-cell" data-label="${t('th_authority')}">${obj.authority === 'yes' ? '<i data-lucide="check" style="color:var(--authority-green); width:18px;"></i>' : obj.authority === 'no' ? '<i data-lucide="check" style="color:var(--authority-red); width:18px;"></i>' : '-'}</div>
                     <div class="record-cell" data-label="${t('th_agent')}">${obj.agent}</div>
                 </div>`;
             }).join('');
@@ -643,7 +656,7 @@ function renderCustomers() {
             <div class="record-row grid-cust" onclick="openCustomerDetail(${c.id})">
                 <div class="record-cell" data-label="${t('th_status')}"><span class="status-pill status-${statusMap[status]}">${status}</span></div>
                 <div class="record-cell" data-label="${t('th_cust_name')}" style="font-weight:600">${c.name}</div>
-                <div class="record-cell" data-label="${t('th_phone')}">${c.phone}</div>
+                <div class="record-cell" data-label="${t('th_phone')}">${c.phone ? `<a href="tel:${c.phone}" class="phone-link" onclick="event.stopPropagation()">${c.phone}</a>` : '-'}</div>
                 <div class="record-cell" data-label="${t('th_region')}">${c.region || '-'}</div>
                 <div class="record-cell" data-label="${t('th_interest')}">${c.interest || '-'}</div>
                 <div class="record-cell" data-label="${t('th_meeting_date')}">${c.meeting_date || '-'}</div>
@@ -706,7 +719,7 @@ function renderConsultants() {
         <tbody>${cons.map(c => `<tr>
             <td data-label="${nameLabel}" style="font-weight:600">${c.name}</td>
             <td data-label="${compLabel}">${c.company || '-'}</td>
-            <td data-label="${phoneLabel}">${c.phone || '-'}</td>
+            <td data-label="${phoneLabel}">${c.phone ? `<a href="tel:${c.phone}" class="phone-link" onclick="event.stopPropagation()">${c.phone}</a>` : '-'}</td>
             <td data-label="${userLabel}">${c.username}</td>
             <td data-label="${statLabel}"><span class="status-pill status-${c.status === 'active' ? 'sold' : 'hot'}">${c.status === 'active' ? (state.language==='tr'?'Aktif':'Active') : (state.language==='tr'?'Pasif':'Locked')}</span></td>
             <td data-label="${actLabel}">
@@ -851,7 +864,15 @@ window.openPropertyDetail = (id) => {
                 </select>
             </div>
             <div class="form-group"><label class="form-label">${t('th_status')}</label>
-                <select id="p-status" class="form-select">${(state.editingItem.category === 'sale' ? ['Yeni','Sıcak','Pazarlıkta','Satıldı'] : ['Yeni','Sıcak','Pazarlıkta','Kiralandı']).map(s => `<option value="${s}" ${state.editingItem.status === s ? 'selected' : ''}>${s}</option>`).join('')}</select>
+                <select id="p-status" class="form-select" onchange="const bw = document.getElementById('p-buyer-info-wrap'); if(this.value==='Satıldı'||this.value==='Kiralandı') bw.style.display='grid'; else bw.style.display='none';">${(state.editingItem.category === 'sale' ? ['Yeni','Sıcak','Pazarlıkta','Satıldı'] : ['Yeni','Sıcak','Pazarlıkta','Kiralandı']).map(s => `<option value="${s}" ${state.editingItem.status === s ? 'selected' : ''}>${s}</option>`).join('')}</select>
+            </div>
+        </div>
+        <div id="p-buyer-info-wrap" class="form-grid-2" style="display:${(state.editingItem.status === 'Satıldı' || state.editingItem.status === 'Kiralandı') ? 'grid' : 'none'}; background:rgba(var(--primary-rgb), 0.05); padding:1rem; border-radius:8px; border:1px dashed var(--primary); margin-bottom:1rem;">
+            <div class="form-group"><label class="form-label" style="color:var(--primary); font-weight:700;">Alan / Kiralayan Bilgisi</label>
+                <input type="text" id="p-buyer-name" class="form-input" placeholder="${t('th_buyer')}" value="${state.editingItem.buyer_name || ''}">
+            </div>
+            <div class="form-group"><label class="form-label">&nbsp;</label>
+                <input type="tel" id="p-buyer-phone" class="form-input" placeholder="${t('th_buyer_phone')}" value="${state.editingItem.buyer_phone || ''}">
             </div>
         </div>
         <div class="form-grid-2">
@@ -882,7 +903,19 @@ window.openPropertyDetail = (id) => {
                     ${['Boş','Kiracı','Mülk Sahibi'].map(o => `<option value="${o}" ${state.editingItem.usage === o ? 'selected' : ''}>${o}</option>`).join('')}
                 </select>
             </div>
+        <div class="form-grid-2">
             <div class="form-group"><label class="form-label">${t('th_price')}</label><input type="text" id="p-price" class="form-input" value="${state.editingItem.price}"></div>
+            <div class="form-group">
+                <label class="form-label">${t('th_authority')}</label>
+                <div class="authority-toggle">
+                    <div id="p-auth-yes" class="auth-btn green ${state.editingItem.authority === 'yes' ? 'active' : ''}" onclick="state.editingItem.authority = 'yes'; document.getElementById('p-auth-yes').classList.add('active'); document.getElementById('p-auth-no').classList.remove('active');">
+                        <i data-lucide="check"></i>
+                    </div>
+                    <div id="p-auth-no" class="auth-btn red ${state.editingItem.authority === 'no' ? 'active' : ''}" onclick="state.editingItem.authority = 'no'; document.getElementById('p-auth-no').classList.add('active'); document.getElementById('p-auth-yes').classList.remove('active');">
+                        <i data-lucide="check"></i>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="form-group" style="${isAdmin ? '' : 'display:none'}"><label class="form-label">${t('th_agent')}</label>
             <select id="p-agent" class="form-select">${agents.map(a => `<option value="${a.name}" ${state.editingItem.agent === a.name ? 'selected' : ''}>${a.name}</option>`).join('')}</select>
@@ -892,6 +925,7 @@ window.openPropertyDetail = (id) => {
     setTimeout(() => {
         const saveBtn = document.getElementById('save-modal');
         if (saveBtn) saveBtn.onclick = doSaveModal;
+        initIcons();
     }, 0);
 };
 
@@ -924,9 +958,29 @@ window.openCustomerDetail = (id) => {
         </div>
         <div id="c-seller-status-wrap" class="form-group" style="display:${state.editingCustomer.status === 'Tamamlandı' ? 'block' : 'none'}; background:rgba(22, 163, 74, 0.05); padding:1rem; border-radius:8px; border:1px dashed var(--accent-green); margin-bottom:1rem;">
             <label class="form-label" style="color:var(--accent-green); font-weight:700;">Portföy / Satıcı Durumu</label>
-            <select id="c-seller-status" class="form-select">
-                ${(cat === 'sale' ? ['Yeni','Sıcak','Pazarlıkta','Satıldı'] : ['Yeni','Sıcak','Pazarlıkta','Kiralandı']).map(s => `<option value="${s}" ${(state.editingCustomer.seller_status || 'Yeni') === s ? 'selected' : ''}>${s}</option>`).join('')}
-            </select>
+            <div class="form-grid-2" style="margin-bottom:0.75rem;">
+                <div>
+                    <label class="form-label">Durum</label>
+                    <select id="c-seller-status" class="form-select">
+                        ${(cat === 'sale' ? ['Yeni','Sıcak','Pazarlıkta','Satıldı'] : ['Yeni','Sıcak','Pazarlıkta','Kiralandı']).map(s => `<option value="${s}" ${(state.editingCustomer.seller_status || 'Yeni') === s ? 'selected' : ''}>${s}</option>`).join('')}
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">${t('th_price')}</label>
+                    <input type="text" id="c-price" class="form-input" value="${state.editingCustomer.price || ''}">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">${t('th_authority')}</label>
+                <div class="authority-toggle">
+                    <div id="c-auth-yes" class="auth-btn green ${state.editingCustomer.authority === 'yes' ? 'active' : ''}" onclick="state.editingCustomer.authority = 'yes'; document.getElementById('c-auth-yes').classList.add('active'); document.getElementById('c-auth-no').classList.remove('active');">
+                        <i data-lucide="check"></i>
+                    </div>
+                    <div id="c-auth-no" class="auth-btn red ${state.editingCustomer.authority === 'no' ? 'active' : ''}" onclick="state.editingCustomer.authority = 'no'; document.getElementById('c-auth-no').classList.add('active'); document.getElementById('c-auth-yes').classList.remove('active');">
+                        <i data-lucide="check"></i>
+                    </div>
+                </div>
+            </div>
             <p style="font-size:0.7rem; color:var(--text-secondary); margin-top:0.4rem;">Bu müşteri "Tamamlandı" aşamasında olduğu için portföy durumunu buradan yönetebilirsiniz.</p>
         </div>
         <div class="form-group"><label class="form-label">${t('th_cust_name')}</label><input type="text" id="c-name" class="form-input" value="${state.editingCustomer.name || ''}"></div>
@@ -956,6 +1010,7 @@ window.openCustomerDetail = (id) => {
     setTimeout(() => {
         const saveBtn = document.getElementById('save-modal');
         if (saveBtn) saveBtn.onclick = doSaveModal;
+        initIcons();
     }, 0);
 };
 
@@ -977,6 +1032,9 @@ function doSaveModal() {
             age: document.getElementById('p-age').value.trim(),
             usage: document.getElementById('p-usage').value,
             price: document.getElementById('p-price').value.trim(),
+            authority: state.editingItem.authority || '',
+            buyer_name: document.getElementById('p-buyer-name') ? document.getElementById('p-buyer-name').value.trim() : '',
+            buyer_phone: document.getElementById('p-buyer-phone') ? document.getElementById('p-buyer-phone').value.trim() : '',
             agent: isAdmin ? document.getElementById('p-agent').value : state.editingItem.agent 
         };
         const idx = state.items.findIndex(i => i.id === updated.id);
@@ -999,6 +1057,8 @@ function doSaveModal() {
             interest, 
             status: document.getElementById('c-status').value, 
             seller_status: document.getElementById('c-seller-status') ? document.getElementById('c-seller-status').value : (state.editingCustomer.seller_status || 'Yeni'),
+            price: document.getElementById('c-price') ? document.getElementById('c-price').value.trim() : (state.editingCustomer.price || ''),
+            authority: state.editingCustomer.authority || '',
             region: document.getElementById('c-region').value, 
             meeting_date: document.getElementById('c-meeting-date').value, 
             appointment_datetime, 
