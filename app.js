@@ -412,11 +412,11 @@ function renderBoard(category) {
     const sections = category === 'sale' ? [
         { key: 'group_buyers',        type: 'customers',   data: sortData(customers.filter(c => c.status !== 'Tamamlandı')) },
         { key: 'group_sellers',       type: 'mixed',       data: sortData([...items.filter(i => i.status !== 'Satıldı'), ...customers.filter(c => c.status === 'Tamamlandı' && c.seller_status !== 'Satıldı' && c.seller_status !== 'Kiralandı')]) },
-        { key: 'group_sold',          type: 'properties',  data: sortData(items.filter(i => i.status === 'Satıldı')) }
+        { key: 'group_sold',          type: 'mixed',       data: sortData([...items.filter(i => i.status === 'Satıldı'), ...customers.filter(c => c.status === 'Tamamlandı' && (c.seller_status === 'Satıldı' || c.seller_status === 'Kiralandı'))]) }
     ] : [
         { key: 'group_tenants',       type: 'customers',   data: sortData(customers.filter(c => c.seller_status !== 'Satıldı' && c.seller_status !== 'Kiralandı')) },
-        { key: 'group_rent_portfolio',type: 'properties',  data: sortData(items.filter(i => i.status !== 'Kiralandı')) },
-        { key: 'group_rented',        type: 'properties',  data: sortData(items.filter(i => i.status === 'Kiralandı')) }
+        { key: 'group_rent_portfolio',type: 'mixed',       data: sortData(items.filter(i => i.status !== 'Kiralandı')) },
+        { key: 'group_rented',        type: 'mixed',       data: sortData([...items.filter(i => i.status === 'Kiralandı'), ...customers.filter(c => c.status === 'Tamamlandı' && (c.seller_status === 'Satıldı' || c.seller_status === 'Kiralandı'))]) }
     ];
 
     const statusMap = { 'Yeni': 'new', 'Sıcak': 'hot', 'Pazarlıkta': 'neg', 'Satıldı': 'sold', 'Kiralandı': 'sold', 'Görüşüldü': 'contacted', 'Randevu Alındı': 'appointment', 'Tamamlandı': 'done' };
@@ -540,6 +540,8 @@ function renderBoard(category) {
                     ${hb(sk,'prop_type', 'Mülk', PROP_TYPES)}
                     ${hb(sk,'name', 'Ad / Sahibi')}
                     ${hb(sk,'phone', t('th_phone'))}
+                    ${hb(sk,'buyer_name', t('th_buyer'))}
+                    ${hb(sk,'buyer_phone', t('th_buyer_phone'))}
                     ${hb(sk,'region', t('th_region'))}
                     ${hb(sk,'address', 'Adres / İlgi')}
                     ${hb(sk,'rooms', 'Oda', ROOMS)}
@@ -561,6 +563,8 @@ function renderBoard(category) {
                     <div class="record-cell" data-label="${t('lbl_prop_type')}">${obj.prop_type || '-'}</div>
                     <div class="record-cell" data-label="${t('lbl_owner')}" style="font-weight:600">${obj.name || '-'}</div>
                     <div class="record-cell" data-label="${t('th_phone')}">${obj.phone ? `<a href="tel:${obj.phone}" class="phone-link" onclick="event.stopPropagation()">${obj.phone}</a>` : '-'}</div>
+                    <div class="record-cell" data-label="${t('th_buyer')}">${obj.buyer_name || '-'}</div>
+                    <div class="record-cell" data-label="${t('th_buyer_phone')}">${obj.buyer_phone ? `<a href="tel:${obj.buyer_phone}" class="phone-link" onclick="event.stopPropagation()">${obj.buyer_phone}</a>` : '-'}</div>
                     <div class="record-cell" data-label="${t('th_region')}">${obj.region || '-'}</div>
                     <div class="record-cell" data-label="Adres">${obj.address || '-'}</div>
                     <div class="record-cell" data-label="${t('lbl_rooms')}">${obj.rooms || '-'}</div>
@@ -577,6 +581,8 @@ function renderBoard(category) {
                     <div class="record-cell" data-label="Tip"><span style="background:var(--accent-green); color:white; padding:2px 6px; border-radius:4px; font-size:0.65rem; font-weight:700; display:inline-flex; align-items:center; gap:3px;"><i data-lucide="star" style="width:10px; height:10px;"></i> SATICI</span></div>
                     <div class="record-cell" data-label="${t('th_cust_name')}" style="font-weight:600">${obj.name}</div>
                     <div class="record-cell" data-label="${t('th_phone')}">${obj.phone ? `<a href="tel:${obj.phone}" class="phone-link" onclick="event.stopPropagation()">${obj.phone}</a>` : '-'}</div>
+                    <div class="record-cell" data-label="${t('th_buyer')}">${obj.buyer_name || '-'}</div>
+                    <div class="record-cell" data-label="${t('th_buyer_phone')}">${obj.buyer_phone ? `<a href="tel:${obj.buyer_phone}" class="phone-link" onclick="event.stopPropagation()">${obj.buyer_phone}</a>` : '-'}</div>
                     <div class="record-cell" data-label="${t('th_region')}">${obj.region || '-'}</div>
                     <div class="record-cell" data-label="${t('th_interest')}">${obj.interest || '-'}</div>
                     <div class="record-cell" data-label="Oda">-</div>
@@ -961,7 +967,7 @@ window.openCustomerDetail = (id) => {
             <div class="form-grid-2" style="margin-bottom:0.75rem;">
                 <div>
                     <label class="form-label">Durum</label>
-                    <select id="c-seller-status" class="form-select">
+                    <select id="c-seller-status" class="form-select" onchange="const bw = document.getElementById('c-buyer-info-wrap'); if(this.value==='Satıldı'||this.value==='Kiralandı') bw.style.display='grid'; else bw.style.display='none';">
                         ${(cat === 'sale' ? ['Yeni','Sıcak','Pazarlıkta','Satıldı'] : ['Yeni','Sıcak','Pazarlıkta','Kiralandı']).map(s => `<option value="${s}" ${(state.editingCustomer.seller_status || 'Yeni') === s ? 'selected' : ''}>${s}</option>`).join('')}
                     </select>
                 </div>
@@ -982,6 +988,14 @@ window.openCustomerDetail = (id) => {
                 </div>
             </div>
             <p style="font-size:0.7rem; color:var(--text-secondary); margin-top:0.4rem;">Bu müşteri "Tamamlandı" aşamasında olduğu için portföy durumunu buradan yönetebilirsiniz.</p>
+            <div id="c-buyer-info-wrap" class="form-grid-2" style="display:${(state.editingCustomer.seller_status === 'Satıldı' || state.editingCustomer.seller_status === 'Kiralandı') ? 'grid' : 'none'}; background:rgba(var(--primary-rgb), 0.1); padding:0.75rem; border-radius:8px; border:1px solid var(--accent-green); margin-top:0.5rem; margin-bottom:1rem;">
+                <div class="form-group"><label class="form-label" style="color:var(--primary); font-weight:700;">Alan / Kiralayan Bilgisi</label>
+                    <input type="text" id="c-buyer-name" class="form-input" placeholder="${t('th_buyer')}" value="${state.editingCustomer.buyer_name || ''}">
+                </div>
+                <div class="form-group"><label class="form-label">&nbsp;</label>
+                    <input type="tel" id="c-buyer-phone" class="form-input" placeholder="${t('th_buyer_phone')}" value="${state.editingCustomer.buyer_phone || ''}">
+                </div>
+            </div>
         </div>
         <div class="form-group"><label class="form-label">${t('th_cust_name')}</label><input type="text" id="c-name" class="form-input" value="${state.editingCustomer.name || ''}"></div>
         <div class="form-group"><label class="form-label">${t('th_phone')}</label><input type="text" id="c-phone" class="form-input" value="${state.editingCustomer.phone || ''}"></div>
@@ -1063,6 +1077,8 @@ function doSaveModal() {
             meeting_date: document.getElementById('c-meeting-date').value, 
             appointment_datetime, 
             notes: document.getElementById('c-notes').value, 
+            buyer_name: document.getElementById('c-buyer-name') ? document.getElementById('c-buyer-name').value.trim() : '',
+            buyer_phone: document.getElementById('c-buyer-phone') ? document.getElementById('c-buyer-phone').value.trim() : '',
             agent: state.currentUser.role==='admin' ? document.getElementById('c-agent').value : state.editingCustomer.agent 
         };
         const idx = state.customers.findIndex(i => i.id === updated.id);
